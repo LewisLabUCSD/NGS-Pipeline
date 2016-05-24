@@ -30,7 +30,12 @@ def remove(files):
                 remove(f+'.bai')
             except:
                 continue
-            
+
+def check_file_exists(input_file, output_file):
+    if not os.path.exists(output_file):
+        return True, "Missing file %s" % output_file
+    else:
+        return False, "File %s exists" % output_file
 
 def list_fq_files(file_path):
     """
@@ -81,7 +86,7 @@ def replace_filename(inputfile,input_pattern,out_pattern):
             res.append(output)
         outFile.append(res)
     return inputfile,outFile
-# result = replace_filename([['f_1.fq.gz','f_2.fq.gz']],'^','trim_')
+# result = replace_filename([['f_1.fq.gz','f_2.fq.gz']],'^','')
 # print result
 
 def num_thread2use(jobs_per_batch,len_of_jobs,given_thread):

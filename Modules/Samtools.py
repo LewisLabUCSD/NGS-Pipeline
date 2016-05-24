@@ -12,8 +12,10 @@ def sortBam(bamFile,sortedBamFile,thread=1,sortType=''):
             tag=tag,thread=str(thread),sort=bamFile[:-3]+'sort',bam=bamFile,sortBam=sortedBamFile)
     print(cmd)
     sarge.run(cmd)
-    cmd = ('samtools index {bam} ').format(bam=sortedBamFile)
-    sarge.run(cmd)
+    if sortType !='name':
+        cmd = ('samtools index {bam} ').format(bam=sortedBamFile)
+        print(cmd)
+        sarge.run(cmd)
 
 def sam2bam(samFile,bamFile,thread):
     """

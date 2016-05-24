@@ -1,7 +1,10 @@
 import sarge
 import os
 import shutil
-
+import sys
+#===============================================================================
+#                         STAR
+#===============================================================================
 def STAR_Db(db_path,ref_fa,thread=1,annotation = '',genomeSize='large'):
     """
     This function generates database for alignment using STAR
@@ -17,7 +20,7 @@ def STAR_Db(db_path,ref_fa,thread=1,annotation = '',genomeSize='large'):
                          '--sjdbOverhang 100').format(gff3=annotation)   # for geneDb add --sjdbGTFfeatureExon CDS
         if genomeSize == 'small':
             cmd = cmd + '--genomeChrBinNbits 6 --genomeSAindexNbases 4'
-    print(cmd)
+    print(cmd);sys.stdout.flush()
     sarge.run(cmd)
 
 def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['']):
@@ -41,7 +44,7 @@ def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['
                     ref=db_path,fq1=fastqFiles[0],fq2=fastqFiles[1],
                     thread=thread,output=outSamFile)
     cmd = starCmd + ' ' + ' '.join(otherParameters)
-    print(cmd)
+    print(cmd);sys.stdout.flush()
     sarge.run(cmd)
     os.rename(outSamFile+'Aligned.out.bam',outSamFile)
     shutil.rmtree(outSamFile+'_STARgenome')
@@ -54,6 +57,39 @@ def BLASR(faFile,outSam,ref_fa,thread,otherParameters=['']):
                     input=faFile,ref=ref_fa,out=outSam,thread=str(thread))
     if otherParameters != ['']:
         cmd = cmd + ' '.join(otherParameters)
-    print(cmd)
+    print(cmd);sys.stdout.flush()
     sarge.run(cmd)
+
+#===============================================================================
+#                         bwa
+#===============================================================================
+def bwa_Db(db_path,ref_fa):
+    """build bwa index"""
+    if not os.path.exists(db_path):
+        os.mkdir(db_path)
+    os.chdir(db_path)
+    cmd = ('bwa index -p bwa -a bwtsw {fa}').format(fa=ref_fa)
+    print(cmd);sys.stdout.flush()
+    sarge.run(cmd)
+    
+def bwa_mem(fqFile,outSam,db_name,thread,otherParameters=['']):
+    """run bwa"""
+    if otherParameters != ['']:
+        other =  ' '.join(otherParameters) + ' '
+    else:
+        other = ''
+    if len(fqFile) == 1:
+        bwaCmd = ('bwa mem -t {thread} {other}{db} {fq} | samtools view -bh - > {out} ').format(
+                    thread=str(thread),other=other,db=db_name,fq=fqFile[0],
+                    out=outSam)
+    else:
+        bwaCmd = ('bwa mem -t {thread} {other}{db} {fq1} {fq2} | samtools view -bh - > '
+        '{out} ').format(thread=str(thread),other=other,db=db_name,fq1=fqFile[0],
+        fq2=fqFile[1],out=outSam)
+    print(bwaCmd);sys.stdout.flush()
+    sarge.run(bwaCmd)
+
+#bwa_mem('/data/shangzhong/Pacbio/sniffle/CHOS.fq.gz','/data/shangzhong/Pacbio/sniffle/result.bam','5',['-x pacbio'])   
+    
+    
     

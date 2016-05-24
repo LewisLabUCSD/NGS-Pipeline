@@ -1,0 +1,8 @@
+contact: '8582636967@txt.att.net' # can also be email address
+RawDataPath: '/data/shangzhong/Pacbio/fa/CHOS'
+thread: 16
+# database parameters
+ref_fa: '/data/genome/hamster/new_pacbio_assemble/ch_illumina_pbj.fasta'
+# tool specific parameters
+blasr_jobs_per_batch: 2
+sam_sort_jobs_per_batch: 6

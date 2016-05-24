@@ -1,4 +1,4 @@
-import os
+import os,sys
 import sarge
 
 def htseq_count(sortedBam,countFile,annotation,strand,outpath,annotationSource):
@@ -23,10 +23,13 @@ def htseq_count(sortedBam,countFile,annotation,strand,outpath,annotationSource):
     elif annotationSource == 'genedb':
         seqType = 'CDS'
         id_attr = 'Parent'
+    elif annotationSource == 'plasmodium':
+        seqType = 'exon'
+        id_attr = 'Parent'
     # 3. run htseq-count
     cmd = ('htseq-count -f bam -s {strand} -t {type} -i {gene} {bam} {annotation} > {output}').format(strand=strand,
          type=seqType,gene=id_attr,bam=sortedBam,annotation=annotation,output=countFile)#os.path.join(outpath,countFile))
-    print(cmd)
+    print(cmd);sys.stdout.flush()
     sarge.run(cmd)
         
         
