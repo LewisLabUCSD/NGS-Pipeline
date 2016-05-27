@@ -33,8 +33,8 @@ def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file=''):
     if len(fqFiles) == 1:
         trimCmd1st = ('java -jar {trim} SE -threads {thread} -phred{type} '
                               '{input} {output} ').format(trim=trimmomatic,thread = int(thread),
-                            input = fqFiles,output=trim_fqFiles[0],type=phred)
-        trimCmd2nd = 'SLIDINGWINDOW:5:10 LEADING:15 TRAILING:10 MINLEN:22 TOPHRED33 '
+                            input = fqFiles[0],output=trim_fqFiles[0],type=phred)
+        trimCmd2nd = 'SLIDINGWINDOW:5:10 LEADING:15 TRAILING:10 MINLEN:36 TOPHRED33 '
     elif len(fqFiles) == 2:
         trimCmd1st = ('java -jar {trim} PE -threads {thread} -phred{type} {fastq1} {fastq2} '
                 '{Trimmed1} {unpair1} {Trimmed2} {unpair2} ').format(trim=trimmomatic,
@@ -49,4 +49,6 @@ def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file=''):
     cmd = trimCmd1st + adaptCmd + trimCmd2nd
     print(cmd)
     sarge.run(cmd)
-    os.remove(unpair[0]);os.remove(unpair[1])
+    for un in unpair:
+        os.remove(un)
+    
