@@ -113,12 +113,13 @@ def Message(string,email):
     sarge.run(cmd)
 
 
-def id_symbol_conversion(input_file,output_file,dict_file,sym2ID='yes'):
+def id_symbol_conversion(input_file,output_file,gene2refseq,tax_id,sym2ID='yes'):
     """This function convers count file based on gene symbol to gene id
     * inputfile: 2 columns. ['symbol','count']
     * outputfile: 2 columns. ['geneid','count']"""
     # 1. build {symbol:id conversion}
-    df = pd.read_csv(dict_file,sep='\t',header=0,names=['geneid','symbol'])
+    df = pd.read_csv(gene2refseq,sep='\t',header=None,usecols=[0,1,15],names=['tax','geneid','symbol'],comment='#',compression='gzip')
+    df = df[df['tax'].values==int(tax_id)]
     sym_id_dict = df.set_index('symbol')['geneid'].to_dict()
     # 2. transfer symbol -> id
     symbol_df = pd.read_csv(input_file,sep='\t',header=None,names=['symbol','count'])
@@ -126,5 +127,4 @@ def id_symbol_conversion(input_file,output_file,dict_file,sym2ID='yes'):
     # 3. output
     symbol_df[['geneid','count']].to_csv(output_file,sep='\t',header=None,index=False)
     os.remove(input_file)
-    
-    
+        

@@ -9,7 +9,6 @@ def htseq_count(sortedBam,countFile,annotation,strand,outpath,annotationSource):
     * outputpath: path to store the result files
     * annotation: source. 'ncbi','ensembl'
     """
-    if not os.path.exists(outpath):(outpath)
     # 1. check whether outputpath exist
     if not os.path.exists(outpath):
         os.mkdir(outpath)

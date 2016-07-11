@@ -34,7 +34,7 @@ def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['
         starCmd = ('STAR --genomeDir {ref} --readFilesCommand zcat '
                      '--readFilesIn {fq1} --runThreadN {thread} '
                      '--outFileNamePrefix {output} ').format(
-                    ref=db_path,fq=fastqFiles[0],
+                    ref=db_path,fq1=fastqFiles[0],
                     thread=thread,output=outSamFile)
     elif len(fastqFiles) == 2:
         starCmd = ('STAR --genomeDir {ref} --readFilesCommand zcat '
@@ -46,7 +46,11 @@ def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['
     cmd = starCmd + ' ' + ' '.join(otherParameters)
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
-    os.rename(outSamFile+'Aligned.out.bam',outSamFile)
+    if 'SortedByCoordinate' in otherParameters:
+        outFile = outSamFile+'Aligned.sortedByCoord.out.bam'
+    else:
+        outFile = outSamFile+'Aligned.out.bam'
+    os.rename(outFile,outSamFile)
     shutil.rmtree(outSamFile+'_STARgenome')
     
     
@@ -72,6 +76,7 @@ def bwa_Db(db_path,ref_fa):
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
     
+    
 def bwa_mem(fqFile,outSam,db_name,thread,otherParameters=['']):
     """run bwa"""
     if otherParameters != ['']:
@@ -90,6 +95,6 @@ def bwa_mem(fqFile,outSam,db_name,thread,otherParameters=['']):
     sarge.run(bwaCmd)
 
 #bwa_mem('/data/shangzhong/Pacbio/sniffle/CHOS.fq.gz','/data/shangzhong/Pacbio/sniffle/result.bam','5',['-x pacbio'])   
-    
+
     
     
