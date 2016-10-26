@@ -40,3 +40,50 @@ def Honey_spots(finalBam,spotFile,ref_fa,thread,otherParams=['']):
     cmd = cmd + ' '.join(otherParams)
     print(cmd)
     sarge.run(cmd)
+
+import pandas as pd
+import numpy as np
+class pb_tail_res(object):
+    '''
+    Input is output result from pb tail. should be pandas dataframe
+    '''
+    def __init__(self,df):
+        self.df = df
+        self.df.columns = ['id','chrKey','uRef','uBreak','uMapq','dRef','dBreak','dMapq','remainSeq','annot','numReads','numZMWs','evidence']
+    
+    def get_sv_types(self):
+        '''get all the sv types'''
+        types = list(set(self.df['annot'].tolist()))
+        return types
+        
+    def get_sv_num(self,sv_type):
+        '''get sv number'''
+        df = self.df
+        return df[df['annot'].values==sv_type].shape[0]
+    
+    def add_sv_len(self):
+        '''add sv length for each sv except translocation whose break points are in different chromosome.'''
+        df = self.df
+        df['len'] = df.apply(lambda row: 'NA' if row['annot']=='TLOC' else int(row['dBreak'])-int(row['uBreak']),axis=1)
+        return df
+    
+    def get_sv_num4_each_chr(self,chr_len_df,sv_type,count_log=False,length_log=False):
+        '''get sv number for each scaffold for specific sv type
+        * chr_len_df: pandas dataframe with 1 column. ['chr_len']. chr name is index
+        '''
+        df = self.df[self.df['annot'].values==sv_type]
+        sv_count = df.groupby(['uRef']).size()
+        df = pd.concat([sv_count,chr_len_df],axis=1)
+        df = df.fillna(0)
+        df = df.rename(columns={0:'count'})
+        if count_log == True:
+            df['count'] = np.log10(df['count'])
+        if length_log == True:
+            df['chr_len'] = np.log10(df['chr_len'])
+        return df
+
+
+    
+        
+        
+        

@@ -14,7 +14,7 @@ picard: '/home/shangzhong/Installation/picard-tools-1.141/picard.jar'
 gatk: '/home/shangzhong/Installation/GenomeAnalysisTK-3.5/GenomeAnalysisTK.jar'
 
 bwa_jobs_per_batch: 2
-bwa_index: '/data/genome/hamster/ncbi_refseq/bwa_Db/bwa'
+bwa_Db: '/data/genome/hamster/ncbi_refseq/bwa_Db'
 
 sample_name: 'hamster'
 read_groups: ['@RG\\tID:CellLine8_2\\tSM:CellLine8_2','@RG\\tID:CellLine8_3\\tSM:CellLine8_3']

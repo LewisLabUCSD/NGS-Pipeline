@@ -54,13 +54,16 @@ def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['
     shutil.rmtree(outSamFile+'_STARgenome')
     
     
-def BLASR(faFile,outSam,ref_fa,thread,otherParameters=['']):
+def BLASR(faFile,outBam,ref_fa,thread,otherParameters=['']):
     """This function runs BLASR"""
     
-    cmd = ('blasr {input} {ref} -sam -out {out} -nproc {thread} ').format(
-                    input=faFile,ref=ref_fa,out=outSam,thread=str(thread))
     if otherParameters != ['']:
-        cmd = cmd + ' '.join(otherParameters)
+        other = ' '.join(otherParameters)
+    else:
+        other = ''
+    cmd = ('blasr {input} {ref} -sam -nproc {thread} {other} | samtools view -hb - > {out}').format(
+                    input=faFile,ref=ref_fa,thread=str(thread),other=other,out=outBam,)
+    
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
 
@@ -93,8 +96,27 @@ def bwa_mem(fqFile,outSam,db_name,thread,otherParameters=['']):
         fq2=fqFile[1],out=outSam)
     print(bwaCmd);sys.stdout.flush()
     sarge.run(bwaCmd)
-
 #bwa_mem('/data/shangzhong/Pacbio/sniffle/CHOS.fq.gz','/data/shangzhong/Pacbio/sniffle/result.bam','5',['-x pacbio'])   
 
+
+def bwa_samblaster(fqFiles,outBam,db_name,thread,otherParameters=['']):
+    '''map for lumpy '''
+    if len(fqFiles) != 2:
+        assert False,'fastq files are not paired'
+    if otherParameters != ['']:
+        other =  ' '.join(otherParameters) + ' '
+    else:
+        other = ''
+    split = outBam[:-3]+'split.sam'
+    disc = outBam[:-3] + 'disc.sam'
+    cmd = ('bwa mem -t {thread} {other}{db} {fq1} {fq2} | samblaster --addMateTags -e -d {disc} -s {split} | \
+            samtools view -Sb - > {out}').format(thread=str(thread),other=other,db=db_name,fq1=fqFiles[0],
+            fq2=fqFiles[1],disc=disc,split=split,out=outBam)
+    print cmd
+    #sarge.run(cmd)
+
+
+
+
     
-    
+

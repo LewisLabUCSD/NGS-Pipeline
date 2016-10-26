@@ -120,7 +120,7 @@ else:
 
 if __name__ == '__main__':
     try:
-        pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = False, 
+        pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
                  touch_files_only=False)
     except:
         Message('RNA_count failed',contact)

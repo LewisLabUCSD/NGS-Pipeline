@@ -1,0 +1,17 @@
+contact: '8582636967@txt.att.net'
+RawDataPath: '/data/shangzhong/Pacbio/CHOS_illu_DNA'
+thread: 16
+# database parameters
+ref_fa: '/data/genome/hamster/new_pacbio_assemble/ch_illumina_pbj.fasta'
+# tool specific parameters
+trim_reads: True
+trimmomatic_path: '/home/shangzhong/Installation/Trimmomatic-0.32/Trimmomatic-0.33/trimmomatic-0.33.jar'
+trim_jobs_per_batch: 6
+adapter: ''
+
+bwa_jobs_per_batch: 2
+bwa_index: '/data/genome/hamster/new_pacbio_assemble/bwaDb'
+read_groups : ['@RG\tID:lane1\tSM:CHOS','@RG\tID:lane2\tSM:CHOS',
+             '@RG\tID:lane3\tSM:CHOS','@RG\tID:lane4\tSM:CHOS',
+             '@RG\tID:lane5\tSM:CHOS','@RG\tID:lane6\tSM:CHOS']
+

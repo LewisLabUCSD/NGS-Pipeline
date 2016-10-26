@@ -17,7 +17,7 @@ star_jobs_per_batch: 2
 star_index: '/data/genome/hamster/ncbi_refseq/hamster_STAR_Db'
 
 sample_name: 'hamster'
-read_groups: ['@RG\\tID:CellLine8_2\\tSM:CellLine8_2','@RG\\tID:CellLine8_3\\tSM:CellLine8_3']
+read_groups: ['@RG\tID:CellLine8_2\tSM:CellLine8_2','@RG\tID:CellLine8_3\tSM:CellLine8_3']
 
 
 

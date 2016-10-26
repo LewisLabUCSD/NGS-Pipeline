@@ -12,7 +12,7 @@ import glob
 
 #============ parameters ======================
 parameter_file =  sys.argv[1]
-#parameter_file = '/data/shangzhong/Proteogenomics/test/GATK_RNA_CHO.yaml'
+#parameter_file = '/data/shangzhong/DE/ercc/GATK_RNA_CHO.yaml'
 with open(parameter_file,'r') as f:
     doc = yaml.load(f)
 p = dic2obj(**doc)
@@ -21,7 +21,6 @@ file_path = p.RawDataPath
 thread = p.thread
 # all parameter
 ref_fa = p.ref_fa
-annotation = p.gff
 # trimmomatic parameter
 trim = p.trim_reads
 trimmomatic = p.trimmomatic_path
@@ -41,7 +40,7 @@ contact = p.contact
 #===============================================================================
 #                    Pipeline part
 #===============================================================================
-Message('GATK_DNA_CHO start',contact)
+Message('GATK_RNA_CHO start',contact)
 os.chdir(file_path)
 #===============================================================================
 #                     Part I. Preprocess
@@ -53,6 +52,8 @@ if not os.path.exists(dict_file): build_fa_dict(ref_fa,picard)
 if not os.path.exists(fai_file): build_fa_index(ref_fa)
 #--------------------- 2. read all files ------------------------------------------------
 fastqFiles = list_fq_files(file_path)
+if fastqFiles[0][0].startswith('trim_'):
+    trim = False
 def trim_parameters():
     infiles,outfiles = replace_filename(fastqFiles,'^','trim_')
     for infile, output in zip(infiles,outfiles):
@@ -257,7 +258,7 @@ def run_filter_2(input_file,output_file):
     
 @follows(run_filter_2)
 def last_function():
-    Message('test succeed',contact)
+    Message('GATK_RNA_CHO succeed',contact)
     
 if __name__ == '__main__':
     try:
@@ -265,7 +266,7 @@ if __name__ == '__main__':
         pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
         touch_files_only=False)
     except:
-        Message('test failed',contact)
+        Message('GATK_RNA_CHO failed',contact)
 
     
     

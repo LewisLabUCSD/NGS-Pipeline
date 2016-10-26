@@ -4,11 +4,11 @@ from ruffus import *
 from Modules.Aligner import bwa_mem,bwa_Db
 from Modules.Sniffles import sniffle
 import yaml
-
+from Modules.Samtools import sortBam
 
 #============ parameters ======================
-#parameter_file =  sys.argv[1]
-parameter_file = '/home/shangzhong/Codes/NewPipeline/Parameters/SV_Pacbio_Sniffle.yaml'
+parameter_file =  sys.argv[1]
+#parameter_file = '/home/shangzhong/Codes/NewPipeline/Parameters/SV_Pacbio_Sniffle.yaml'
 with open(parameter_file,'r') as f:
     doc = yaml.load(f)
 p = dic2obj(**doc)
@@ -40,12 +40,19 @@ def bwa_index():
 @transform(fastqFiles,formatter('.*\.f.*q\.gz'),'bam/{basename[0]}.bam')
 def run_bwa(input_file,output_file):
     print(input_file + '-->' + output_file)
-    bwa_mem([input_file],output_file,db_path+'/bwa',thread,otherParameters=['-x pacbio'])
-#--------------------- 3. Detect SV -----------------------------------------------
+    bwa_mem([input_file],output_file,db_path+'/bwa',thread,otherParameters=['-M','-x pacbio'])
+#--------------------- 3. sort bam file -----------------------------------------------
 @follows(run_bwa)
+@mkdir(fastqFiles,formatter(),'{path[0]}/sortBam')
+@check_if_uptodate(check_file_exists)
+@transform(run_bwa,formatter('.*\.bam'),'sortBam/{basename[0]}.sort.bam')
+def run_sortBam(input_file,output_file):
+    sortBam(input_file,output_file,thread)
+#--------------------- 4. Detect SV -----------------------------------------------
+@follows(run_sortBam)
 @mkdir(fastqFiles,formatter(),'{path[0]}/vcf')
 @check_if_uptodate(check_file_exists)
-@transform(run_bwa,formatter('.*\.bam'),'vcf/{basename[0]}.vcf')
+@transform(run_sortBam,formatter('.*\.sort\.bam'),'vcf/{basename[0]}.vcf')
 def run_sniffle(input_file,output_file):
     sniffle(input_file,output_file,otherParameters=[''])
 #--------------------- 4. return finish message -----------------------------------------------------
@@ -56,7 +63,7 @@ def last_function():
 
 if __name__ == '__main__':
     try:
-        pipeline_run([last_function],multiprocess=thread, exceptions_terminate_immediately = True,gnu_make_maximal_rebuild_mode = False, 
-                 touch_files_only=False)
+        pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
+                 touch_files_only=False,verbose=15)
     except:
         Message('SV_Sniffle failed',contact)

@@ -17,6 +17,7 @@ file_path = p.RawDataPath
 thread = p.thread
 # all parameter
 ref_fa = p.ref_fa
+sa = p.sa_index
 # tool parameters
 blasr_batch = p.blasr_jobs_per_batch
 sam_sort_batch = p.sam_sort_jobs_per_batch
@@ -28,34 +29,22 @@ contact = p.contact
 #--------------------- 1. read all files ------------------------------------------------
 Message('PBHoney start',contact)
 os.chdir(file_path)
-faFiles = [[os.path.join(file_path,f)] for f in os.listdir(file_path) if f.endswith('.fa')]
-Message('Pcbio SV start',contact)
-print faFiles
-
+faFiles = [os.path.join(file_path,f) for f in os.listdir(file_path) if f.endswith('.fa')]
+print faFiles;sys.stdout.flush()
 #--------------------- 2. run BLASR -----------------------------------------------------
 @jobs_limit(blasr_batch)
-@mkdir(faFiles,formatter(),'{path[0]}/sam')
-@transform(faFiles,formatter(),'{path[0]}/sam/{basename[0]}.sam')        #regex('.*\.fa'),'.bam')
+@mkdir(faFiles,formatter(),'{path[0]}/bam')
+@transform(faFiles,formatter(),'bam/{basename[0]}.bam')        #regex('.*\.fa'),'.bam')
 @check_if_uptodate(check_file_exists)
 def run_blasr(input_file,output_file):
     n = num_thread2use(blasr_batch,len(faFiles),thread)
-    BLASR(input_file,output_file,ref_fa,n,['-clipping soft'])
-
+    BLASR(input_file,output_file,ref_fa,n,['-clipping soft','-sa '+sa])
 #--------------------- 3. Sam2SortBam -----------------------------------------------------
-# sam to bam
-@follows(run_blasr)
-@mkdir(faFiles,formatter(),'{path[0]}/bam')
-@transform(run_blasr,formatter('.*\.sam'),'bam/{basename[0]}.bam')
-@check_if_uptodate(check_file_exists)
-def samtobam(input_file,output_file):
-    n = num_thread2use(thread,len(faFiles),thread)
-    sam2bam(input_file,output_file,n)
-    if os.path.exists('sam'): shutil.rmtree('sam')
 # sort bam
-@follows(samtobam)
+@follows(run_blasr)
 @jobs_limit(sam_sort_batch)
 @mkdir(faFiles,formatter(),'{path[0]}/sortBam')
-@transform(samtobam,formatter('.*\.bam'),'sortBam/{basename[0]}.sort.bam')
+@transform(run_blasr,formatter('.*\.bam'),'sortBam/{basename[0]}.sort.bam')
 @check_if_uptodate(check_file_exists)
 def sortbam(input_file,output_file):
     n = num_thread2use(sam_sort_batch,len(faFiles),thread)
@@ -92,7 +81,7 @@ def last_function():
 
 if __name__ == '__main__':
     try:
-        pipeline_run([last_function],multiprocess=thread, exceptions_terminate_immediately = False,gnu_make_maximal_rebuild_mode = False, 
+        pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
                  touch_files_only=False,verbose=5)
     except:
         Message('Pacbio SV failed',contact)

@@ -28,7 +28,7 @@ def sam2fq(inSam,outPrefix,picard,endType):
 def build_fa_dict(ref_fa,picard):
     '''build dictionary file for fa file '''
     out = '.'.join(ref_fa.split('.')[:-1]) + '.dict'
-    cmd = ('java -jar {picard} CreateSequenceDictionary R={ref} OO={out}').format(
+    cmd = ('java -jar {picard} CreateSequenceDictionary R={ref} O={out}').format(
             picard = picard,ref=ref_fa,out=out)
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)

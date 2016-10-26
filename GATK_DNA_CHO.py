@@ -33,7 +33,7 @@ picard = p.picard
 gatk = p.gatk
 
 bwa_batch = p.bwa_jobs_per_batch
-bwa_index = p.bwa_index
+bwa_Db = p.bwa_Db
 
 sp = p.sample_name
 read_groups = p.read_groups
@@ -62,7 +62,6 @@ def trim_parameters():
 @active_if(trim)
 @jobs_limit(trim_batch)
 @files(trim_parameters)
-@check_if_uptodate(check_file_exists)
 def trim_reads(input_file,output_file):
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
     Trimmomatic(input_file,output_file,trimmomatic,n,adapter)
@@ -74,10 +73,10 @@ def get_fq_and_readgroup():
         out = 'bam/' + re.sub('\.f.*q\.gz','.bam',fq[0])
         yield fq,out,rg
 # build index
-@active_if(not os.path.exists('/'.join(bwa_index.split('/')[:-1])))
+@active_if(not os.path.exists(bwa_Db))
 @follows(trim_reads)
 def bwa_index():
-    bwa_Db(bwa_index,ref_fa)
+    bwa_Db(bwa_Db,ref_fa)
 # align
 @jobs_limit(bwa_batch)
 @follows(bwa_index)
@@ -86,7 +85,7 @@ def bwa_index():
 @check_if_uptodate(check_file_exists)
 def run_bwa(input_file,output_file,rg):
     n = num_thread2use(bwa_batch,len(fastqFiles),thread)
-    bwa_mem(input_file,output_file,bwa_index,n,otherParameters=['-M','-R '+rg+'\\tPL:illumina\\tLB:lib20000\\tPU:unit1'])
+    bwa_mem(input_file,output_file,bwa_Db+'/bwa',n,otherParameters=['-M','-R '+rg+'\\tPL:illumina\\tLB:lib20000\\tPU:unit1'])
 #--------------------- 5. Sort bam file --------------------------------------------------
 @jobs_limit(trim_batch)
 @follows(run_bwa)
