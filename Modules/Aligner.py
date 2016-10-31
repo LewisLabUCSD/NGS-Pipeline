@@ -33,13 +33,13 @@ def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['
     if len(fastqFiles) == 1:
         starCmd = ('STAR --genomeDir {ref} --readFilesCommand zcat '
                      '--readFilesIn {fq1} --runThreadN {thread} '
-                     '--outFileNamePrefix {output} ').format(
+                     '--outFileNamePrefix {output}').format(
                     ref=db_path,fq1=fastqFiles[0],
                     thread=thread,output=outSamFile)
     elif len(fastqFiles) == 2:
         starCmd = ('STAR --genomeDir {ref} --readFilesCommand zcat '
                      '--readFilesIn {fq1} {fq2} --runThreadN {thread} '
-                     '--outFileNamePrefix {output} '
+                     '--outFileNamePrefix {output}'
                      ).format(
                     ref=db_path,fq1=fastqFiles[0],fq2=fastqFiles[1],
                     thread=thread,output=outSamFile)
@@ -51,7 +51,8 @@ def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['
     else:
         outFile = outSamFile+'Aligned.out.bam'
     os.rename(outFile,outSamFile)
-    shutil.rmtree(outSamFile+'_STARgenome')
+    if os.path.exists(outSamFile+'_STARgenome'):
+        shutil.rmtree(outSamFile+'_STARgenome')
     
     
 def BLASR(faFile,outBam,ref_fa,thread,otherParameters=['']):
