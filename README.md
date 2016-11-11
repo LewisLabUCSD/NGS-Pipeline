@@ -3,6 +3,7 @@ Pipelines to process NGS or Pacbio data
 ---------------------------------------
 
 ## Method to run these pipelines.
+Paired end files should end with _1.fq.gz, _2.fq.gz or _1.fastq.gz,_2.fastq.fz. Single end files should end with _1.fq.gz
 1. define all parameters in the corresponding parameter file in parameters folder.
 2. In bash terminal, run the followsing command:
 	* nohup python pipeline.py parameter.yaml > log.txt &
