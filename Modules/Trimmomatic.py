@@ -50,5 +50,6 @@ def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file=''):
     print(cmd)
     sarge.run(cmd)
     for un in unpair:
-        os.remove(un)
+        if os.path.exists(un):
+            os.remove(un)
     

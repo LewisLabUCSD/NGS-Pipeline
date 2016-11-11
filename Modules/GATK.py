@@ -210,7 +210,7 @@ def RNA_Vari_Filter(vcf,filterVCF,gatk,ref_fa):
     sarge.run(cmd)
     
 
-def RNA_BaseRecalibrator_1(realiBam,table,gatk,ref_fa,gold_vcf,thread):
+def RNA_BaseRecalibrator_1(realiBam,table,gatk,ref_fa,gold_vcf,thread='1'):
     '''step 1 of base recalibration,generate a table'''
     cmd = ('java -jar {gatk} -T BaseRecalibrator -R {ref_fa} '
             '-I {realignbam} -knownSites {gold} '
