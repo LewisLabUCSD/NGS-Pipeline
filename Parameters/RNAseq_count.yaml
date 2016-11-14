@@ -3,7 +3,7 @@ RawDataPath: '/data/shangzhong/DE/FDA'
 thread: 12
 # database parameters
 ref_fa: '/data/genome/cho/chok1.fa'
-gff: '/data/genome/cho/chok1.gff'
+gff:  '' #'/data/genome/cho/chok1.gff'
 # tool specific parameters
 trim_reads: True
 trimmomatic_path: '/home/shangzhong/Installation/Trimmomatic-0.32/Trimmomatic-0.33/trimmomatic-0.33.jar'
@@ -14,7 +14,7 @@ star_jobs_per_batch: 2
 STAR_index_path:  '/data/genome/cho/cho_STAR_Db'  #'/opt/genome/cho/STAR_Db'  # alinger index
 
 htseq_path: '/data/shangzhong/DE/FDA/htseq'
-htseq_anno_source: 'ncbi'
+htseq_anno_source: 'ncbi'  # if annotation file is from ensembl, should set as 'ensembl'
 strand_specific: 'no'  # "FR, RF, F, R"
 # other parameters
 gene2ref_seq: '/data/shangzhong/Database/gene2refseq.gz'
