@@ -1,7 +1,7 @@
 import os,sys
 import sarge
 
-def htseq_count(sortedBam,countFile,annotation,strand,outpath,annotationSource):
+def htseq_count(sortedBam,countFile,annotation,strand,annotationSource):
     """This function run htseq_count to count reads given bam file
     * sortedBam: str. Bamfile name
     * countFile: outputfilename
@@ -9,9 +9,6 @@ def htseq_count(sortedBam,countFile,annotation,strand,outpath,annotationSource):
     * outputpath: path to store the result files
     * annotation: source. 'ncbi','ensembl'
     """
-    # 1. check whether outputpath exist
-    if not os.path.exists(outpath):
-        os.mkdir(outpath)
     # 2. check the annotation source
     if annotationSource == 'ncbi':
         seqType = 'exon'

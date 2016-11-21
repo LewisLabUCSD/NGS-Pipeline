@@ -15,7 +15,7 @@ STAR_index_path:  '/data/genome/cho/cho_STAR_Db'  #'/opt/genome/cho/STAR_Db'  # 
 
 htseq_path: '/data/shangzhong/DE/FDA/htseq'
 htseq_anno_source: 'ncbi'  # if annotation file is from ensembl, should set as 'ensembl'
-strand_specific: 'no'  # "FR, RF, F, R"
+strand_specific: 'no'  # 'yes, no, reverse'
 # other parameters
 gene2ref_seq: '/data/shangzhong/Database/gene2refseq.gz'
 tax_id: '10029' # taxonomy id, should be set if htseq_anno_source is ncbi
