@@ -27,7 +27,7 @@ def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['
     """STAR for single end read"""
     if annotation != '':
         otherParameters.extend(['--sjdbGTFfile {gff}'.format(gff=annotation)])
-    if annotation.endswith('gff'):
+    if annotation.endswith('gff') or annotation.endswith('gff3'):
         otherParameters.append('--sjdbGTFtagExonParentTranscript Parent')
     # generate command
     if len(fastqFiles) == 1:
