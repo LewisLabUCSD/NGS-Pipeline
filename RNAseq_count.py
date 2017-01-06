@@ -6,16 +6,16 @@ from Modules.Samtools import sortBam
 from Modules.HTseq import htseq_count
 import yaml
 import sys,shutil
-
 #============ parameters ======================
 parameter_file =  sys.argv[1]
-#parameter_file = '/data/shangzhong/DE/winzeler/RNAseq_count.yaml'
+#parameter_file = '/data/shangzhong/Proteogenomics/RNAseq_count.yaml'
 with open(parameter_file,'r') as f:
     doc = yaml.load(f)
 p = dic2obj(**doc)
 #------------- get parameters -----------
 file_path = p.RawDataPath
 thread = p.thread
+QC = p.QC
 # all parameter
 ref_fa = p.ref_fa
 annotation = p.gff
@@ -28,7 +28,6 @@ adapter = p.adapter
 star_batch = p.star_jobs_per_batch
 db_path = p.STAR_index_path
 # htseq parameter
-htseq_path = p.htseq_path
 htseq_anno_source = p.htseq_anno_source
 strand = p.strand_specific
 
@@ -39,7 +38,7 @@ contact = p.contact
 #                    Pipeline part
 #===============================================================================
 #--------------------- 1. read all files ------------------------------------------------
-Message('RNA_count start',contact)
+# Message('RNA_count start',contact)
 os.chdir(file_path)
 fastqFiles = list_fq_files(file_path)
 if fastqFiles[0][0].startswith('trim_'):
@@ -49,39 +48,49 @@ def trim_parameters():
     infiles,outfiles = replace_filename(fastqFiles,'^','trim_')
     for infile, output in zip(infiles,outfiles):
         yield infile,output
-
+#------------- run fastqc before trimming -----------
+@active_if(QC)
+@jobs_limit(thread)
+@mkdir(fastqFiles,formatter(),'{path[0]}/fastqc')
+@files(trim_parameters)
+def run_QC1(input_file,output_file):
+    for fq in input_file:
+        sarge.run('fastqc {input} -o fastqc'.format(input=fq))
+#------------ trim file ------------------
 @active_if(trim)
+@follows(run_QC1)
 @jobs_limit(trim_batch)
 @files(trim_parameters)
 def trim_reads(input_file,output_file):
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
     Trimmomatic(input_file,output_file,trimmomatic,n,adapter)
     remove(input_file)
+#------------ run fastqc after trimming ------------
+@active_if(QC and trim)
+@follows(trim_reads)
+@jobs_limit(thread)
+@mkdir(fastqFiles,formatter(),'{path[0]}/fastqc')
+@files(trim_parameters)
+def run_QC2(input_file,output_file):
+    for fq in output_file:
+        sarge.run('fastqc {input} -o fastqc'.format(input=fq))
 #--------------------- 3. run STAR ------------------------------------------------------
 # build index
 @active_if(not os.path.exists(db_path))
-@follows(trim_reads)
+@follows(trim_reads,run_QC2)
 def star_index():
     STAR_Db(db_path,ref_fa,thread)
 # align
-if trim == True:
-    @jobs_limit(star_batch)
-    @follows(trim_reads,star_index)
-    @mkdir(fastqFiles,formatter(),'{path[0]}/bam')
-    @check_if_uptodate(check_file_exists)
-    @transform(trim_reads,formatter('.*\.f.*?\.gz'),'bam/{basename[0]}.bam')
-    def run_star(input_file,output_file):
-        n = num_thread2use(star_batch,len(fastqFiles),thread)
-        STAR(input_file,output_file,db_path,n,annotation,['--outSAMtype BAM','Unsorted'])
-else:
-    @jobs_limit(star_batch)
-    @follows(star_index)
-    @mkdir(fastqFiles,formatter(),'{path[0]}/bam')
-    @check_if_uptodate(check_file_exists)
-    @transform(fastqFiles,formatter('.*\.f.*?\.gz'),'bam/{basename[0]}.bam')
-    def run_star(input_file,output_file):
-        n = num_thread2use(star_batch,len(fastqFiles),thread)
-        STAR(input_file,output_file,db_path,n,annotation,['--outSAMtype BAM','Unsorted'])
+if trim == False:
+    trim_reads=fastqFiles
+@jobs_limit(star_batch)
+@follows(star_index)
+@mkdir(fastqFiles,formatter(),'{path[0]}/bam')
+@check_if_uptodate(check_file_exists)
+@transform(trim_reads,formatter('.*\.f.*?\.gz'),'bam/{basename[0]}.bam')
+def run_star(input_file,output_file):
+    n = num_thread2use(star_batch,len(fastqFiles),thread)
+    STAR(input_file,output_file,db_path,n,annotation,['--outSAMtype BAM','Unsorted','--outSAMunmapped Within'])
 #--------------------- 4. samtools sort by name -----------------------------------------
 @jobs_limit(trim_batch)
 @follows(run_star)
@@ -91,6 +100,9 @@ else:
 def sort_by_name(input_file,output_file):
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
     sortBam(input_file,output_file,n,sortType='name')
+    stat = sarge.get_stdout('samtools flagstat {bam}'.format(bam=output_file))
+    with open(output_file[:-3]+'flagstat.txt','w') as f:
+        f.write(stat)
 @follows(sort_by_name)
 def remove_bam():
     if os.path.exists('bam'): shutil.rmtree('bam')   # remove bam folder
@@ -100,7 +112,7 @@ def remove_bam():
 @check_if_uptodate(check_file_exists)
 @transform(sort_by_name,formatter('.*\.sort\.bam'),'htseq/{basename[0]}.txt')
 def run_htseq(input_file,output_file):
-    htseq_count(input_file,output_file,annotation,strand,htseq_path,htseq_anno_source)
+    htseq_count(input_file,output_file,annotation,strand,htseq_anno_source)
 #--------------------- 6. ID convertion -----------------------------------------------------
 @active_if(htseq_anno_source=='ncbi')
 @follows(run_htseq)
@@ -121,7 +133,7 @@ else:
 if __name__ == '__main__':
     try:
         pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
-                 touch_files_only=False)
+                 touch_files_only=False,verbose=5)
     except:
         Message('RNA_count failed',contact)
     
