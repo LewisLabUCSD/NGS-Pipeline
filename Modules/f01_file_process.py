@@ -127,4 +127,5 @@ def id_symbol_conversion(input_file,output_file,gene2refseq,tax_id,sym2ID='yes')
     # 3. output
     symbol_df[['geneid','count']].to_csv(output_file,sep='\t',header=None,index=False)
     os.remove(input_file)
-        
+
+     

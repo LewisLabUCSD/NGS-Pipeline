@@ -4,12 +4,12 @@ from ruffus import *
 from Modules.Aligner import bwa_Db,bwa_mem
 from Modules.Trimmomatic import Trimmomatic
 import yaml
-from Modules.Samtools import sortBam
+from Modules.Samtools import sortBam,merge_bams
 import shutil
-from Modules.CNVnator import cnvnator
+from Modules.CNVnator import *
 #============ parameters ======================
-#parameter_file =  sys.argv[1]
-parameter_file = '/data/shangzhong/Pacbio/CHOS_illu_DNA/cnv/CNVnator.yaml'
+parameter_file =  sys.argv[1]
+#parameter_file = '/data/shangzhong/Pacbio/CHOS_illu_DNA/cnv/CNVnator.yaml'
 with open(parameter_file,'r') as f:
     doc = yaml.load(f)
 p = dic2obj(**doc)
@@ -27,6 +27,8 @@ adapter = p.adapter
 bwa_batch = p.bwa_jobs_per_batch
 db_path = p.bwa_Db
 
+bin_win = p.bin_win
+others = p.chrom
 contact = p.contact
 #===============================================================================
 #                    Pipeline part
@@ -76,25 +78,52 @@ def run_bwa(input_file,output_file):
 def sort_by_pos(input_file,output_file):
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
     sortBam(input_file,output_file,n,sortType='pos')
+# @follows(sort_by_pos)
+# def remove_bam():
+#     if os.path.exists('bam'): shutil.rmtree('bam')   # remove bam folder
+# merge bam
 @follows(sort_by_pos)
-def remove_bam():
-    if os.path.exists('bam'): shutil.rmtree('bam')   # remove bam folder
+@mkdir(fastqFiles,formatter(),'{path[0]}/mergeBam')
+@merge(sort_by_pos,'mergeBam/merge.bam')
+@check_if_uptodate(check_file_exists)
+def run_merge_bam(input_file,output_file):
+    if len(input_file) > 1:
+        merge_bams(input_file,output_file)
+    else:
+        os.rename(input_file[0],output_file)
 #------------------- 6. run CNVnator -----------------------------------------------------
 @jobs_limit(thread)
-@follows(sort_by_pos)
+@follows(run_merge_bam)
 @mkdir(fastqFiles,formatter(),'{path[0]}/cnv')
-@transform(sort_by_pos,formatter('.*\.sort\.bam'),'cnv/{basename[0]}.root')
+@transform(run_merge_bam,formatter('.*\.bam'),'cnv/{basename[0]}.txt')
 @check_if_uptodate(check_file_exists)
 def run_cnvnator(input_file,output_file):
-    cnvnator(input_file,output_file)
-
+    root = output_file[:-3] + 'root'
+    # 1
+    cnv_extract_bam(input_file,root,others)
+    # 2
+    chr_path = file_path + '/cnv/scaffold'
+    path = chr_path
+    if not os.path.exists(path):
+        os.mkdir(path)
+        for record in SeqIO.parse(ref_fa,'fasta'):
+            SeqIO.write(record,path+'/'+record.id+'.fa','fasta')
+    
+    cnv_generate_hist(root,chr_path,bin_win,others)
+    # 3
+    cnv_statistics(root,bin_win,others)
+    # 4
+    cnv_partitioning(root,bin_win,others)
+    # 5
+    cnv_call(root,output_file,bin_win,others)
+    
 @follows(run_cnvnator)
 def last_function():
-    Message('cnvnator succeed',contact)
-    
+#     Message('cnvnator succeed',contact)
+    pass
 if __name__ == '__main__':
     try:
-        pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
-                 touch_files_only=False,verbose=20)
+        pipeline_run([run_cnvnator,last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
+                 touch_files_only=False)
     except:
         Message('cnvnator failed',contact)

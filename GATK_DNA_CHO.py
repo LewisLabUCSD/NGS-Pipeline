@@ -85,7 +85,7 @@ def bwa_index():
 @check_if_uptodate(check_file_exists)
 def run_bwa(input_file,output_file,rg):
     n = num_thread2use(bwa_batch,len(fastqFiles),thread)
-    bwa_mem(input_file,output_file,bwa_Db+'/bwa',n,otherParameters=['-M','-R '+rg+'\\tPL:illumina\\tLB:lib20000\\tPU:unit1'])
+    bwa_mem(input_file,output_file,bwa_Db+'/bwa',n,otherParameters=['-R '+rg+'\\tPL:illumina\\tLB:lib20000\\tPU:unit1'])
 #--------------------- 5. Sort bam file --------------------------------------------------
 @jobs_limit(trim_batch)
 @follows(run_bwa)

@@ -1,13 +1,16 @@
 contact: '8582636967@txt.att.net'
-RawDataPath: '/data/shangzhong/Pacbio/CHOS_illu_DNA'
-thread: 16
+RawDataPath: '/data/shangzhong/Pacbio/CHOS_illu_DNA/cnv'
+thread: 12
 # database parameters
 ref_fa: '/data/genome/hamster/ncbi_refseq/hamster.fa'
 # tool specific parameters
-trim_reads: True
+trim_reads: False
 trimmomatic_path: '/home/shangzhong/Installation/Trimmomatic-0.32/Trimmomatic-0.33/trimmomatic-0.33.jar'
 trim_jobs_per_batch: 6
 adapter: ''
 
 bwa_jobs_per_batch: 2
-bwa_Db: ''
+bwa_Db: '/data/genome/hamster/ncbi_refseq/bwa_Db'  # should be a folder
+
+bin_win: 100
+chrom: ['-chrom NW_006887432.1']

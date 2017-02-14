@@ -2,17 +2,15 @@ from ruffus import *
 from Modules.f01_file_process import *
 from Modules.Aligner import STAR_Db,STAR
 from Modules.Trimmomatic import Trimmomatic
-from Modules.Samtools import build_fa_index,merge_bams
-from Modules.Picard import build_fa_dict,mark_duplicates,add_readgroup
-from Modules.GATK import *
-import yaml
+from Modules.Samtools import *
+import yaml,sys
 import shutil
 import glob
 
 
 #============ parameters ======================
 parameter_file =  sys.argv[1]
-#parameter_file = '/home/shangzhong/Codes/NewPipeline/Parameters/STAR_get_bam.yaml'
+#parameter_file = '/data/shangzhong/Proteogenomics/STAR_get_bam.yaml'
 with open(parameter_file,'r') as f:
     doc = yaml.load(f)
 p = dic2obj(**doc)
@@ -28,17 +26,16 @@ trimmomatic = p.trimmomatic_path
 trim_batch = p.trim_jobs_per_batch
 adapter = p.adapter
 
-picard = p.picard
-
 star_batch = p.star_jobs_per_batch
 star_db = p.star_index
-
+run_pass = p.star_pass
+other_params = p.other_params
 
 contact = p.contact
 #===============================================================================
 #                    Pipeline part
 #===============================================================================
-#Message('get bam start',contact)
+Message('get bam start',contact)
 os.chdir(file_path)
 #===============================================================================
 #                     Part I. Preprocess
@@ -71,27 +68,20 @@ def get_fq():
 def star_index():
     STAR_Db(star_db,ref_fa,thread)
 # align
-if gff == '':
-    @jobs_limit(star_batch)
-    @follows(trim_reads,star_index)
-    @mkdir(fastqFiles,formatter(),'{path[0]}/sortBam')
-    @check_if_uptodate(check_file_exists)
-    @files(get_fq)
-#     @transform(trim_reads,formatter('.*\.f.*?\.gz'),'f01_bam/{basename[0]}.sort.bam')
-    def run_star(input_file,output_file):
-        n = num_thread2use(star_batch,len(fastqFiles),thread)
-        STAR(input_file,output_file,star_db,n,'',['--outSAMtype BAM','SortedByCoordinate','--twopassMode Basic'])
-else:
-    @jobs_limit(star_batch)
-    @follows(trim_reads,star_index)
-    @mkdir(fastqFiles,formatter(),'{path[0]}/sortBam')
-    @check_if_uptodate(check_file_exists)
-    @files(get_fq)
-#     @transform(fastqFiles,formatter('.*\.f.*?\.gz'),'f01_bam/{basename[0]}.sort.bam')
-    def run_star(input_file,output_file):
-        n = num_thread2use(star_batch,len(fastqFiles),thread)
-        STAR(input_file,output_file,star_db,n,'',['--outSAMtype BAM','SortedByCoordinate'])
-        
+other_params.extend(['--outSAMtype BAM', 'SortedByCoordinate'])
+if run_pass == 2:
+    other_params.append('--twopassMode Basic')
+    
+
+@jobs_limit(star_batch)
+@follows(star_index)
+@mkdir(fastqFiles,formatter(),'{path[0]}/sortBam')
+#@transform(fastqFiles,formatter('.*\.f.*?\.gz'),'sortBam/{basename[0]}.bam')
+@files(get_fq)
+def run_star(input_file,output_file):
+    n = num_thread2use(star_batch,len(fastqFiles),thread)
+    STAR(input_file,output_file,star_db,n,gff,other_params)
+
 @follows(run_star)
 def last_function():
     Message('get bam succeed',contact)
@@ -100,6 +90,8 @@ if __name__ == '__main__':
     try:
 #         pipeline_printout(sys.stdout, [last_function], verbose=3)
         pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
-        touch_files_only=False)
+                    touch_files_only=False)
     except:
         Message('get bam failed',contact)
+        
+        

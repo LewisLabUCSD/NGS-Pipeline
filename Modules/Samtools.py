@@ -45,4 +45,3 @@ def merge_bams(bamfiles,outputbam):
         cmd = ('samtools merge -f {output} {input}').format(output=outputbam,input=bam)
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
-    

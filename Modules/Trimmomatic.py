@@ -25,7 +25,7 @@ def get_phred_score(fq):
     if score_found == False:
         raise 'could not find the phred score, need to manually set'
     
-def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file=''):
+def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file='',min_len=36):
     """This function run trimmomatic to trim reads"""
     # main parameters
     unpair = [f + 'unpair' for f in fqFiles]
@@ -34,13 +34,13 @@ def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file=''):
         trimCmd1st = ('java -jar {trim} SE -threads {thread} -phred{type} '
                               '{input} {output} ').format(trim=trimmomatic,thread = int(thread),
                             input = fqFiles[0],output=trim_fqFiles[0],type=phred)
-        trimCmd2nd = 'SLIDINGWINDOW:5:10 LEADING:15 TRAILING:10 MINLEN:36 TOPHRED33 '
+        trimCmd2nd = 'SLIDINGWINDOW:5:10 LEADING:15 TRAILING:10 MINLEN:{len} TOPHRED33 '.format(len=min_len)
     elif len(fqFiles) == 2:
         trimCmd1st = ('java -jar {trim} PE -threads {thread} -phred{type} {fastq1} {fastq2} '
                 '{Trimmed1} {unpair1} {Trimmed2} {unpair2} ').format(trim=trimmomatic,
                     thread=int(thread),type=phred,fastq1 = fqFiles[0], fastq2=fqFiles[1], 
                     Trimmed1 = trim_fqFiles[0], Trimmed2 = trim_fqFiles[1],unpair1=unpair[0],unpair2=unpair[1])
-        trimCmd2nd = 'SLIDINGWINDOW:5:10 LEADING:15 TRAILING:10 MINLEN:36 TOPHRED33 '
+        trimCmd2nd = 'SLIDINGWINDOW:5:10 LEADING:15 TRAILING:10 MINLEN:{len} TOPHRED33 '.format(len=str(min_len))
     # adapter file
     if adapter_file != '':
         adaptCmd = 'ILLUMINACLIP:{adapter}:2:30:10 '.format(adapter=adapter_file)

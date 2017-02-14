@@ -33,14 +33,15 @@ def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['
     if len(fastqFiles) == 1:
         starCmd = ('STAR --genomeDir {ref} --readFilesCommand zcat '
                      '--readFilesIn {fq1} --runThreadN {thread} '
-                     '--outFileNamePrefix {output}').format(
+                     '--outFileNamePrefix {output} --outSAMstrandField intronMotif '
+                     '--outFilterIntronMotifs RemoveNoncanonical').format(
                     ref=db_path,fq1=fastqFiles[0],
                     thread=thread,output=outSamFile)
     elif len(fastqFiles) == 2:
         starCmd = ('STAR --genomeDir {ref} --readFilesCommand zcat '
                      '--readFilesIn {fq1} {fq2} --runThreadN {thread} '
-                     '--outFileNamePrefix {output}'
-                     ).format(
+                     '--outFileNamePrefix {output} --outSAMstrandField intronMotif '
+                     '--outFilterIntronMotifs RemoveNoncanonical').format(
                     ref=db_path,fq1=fastqFiles[0],fq2=fastqFiles[1],
                     thread=thread,output=outSamFile)
     cmd = starCmd + ' ' + ' '.join(otherParameters)
@@ -113,8 +114,8 @@ def bwa_samblaster(fqFiles,outBam,db_name,thread,otherParameters=['']):
     cmd = ('bwa mem -t {thread} {other}{db} {fq1} {fq2} | samblaster --addMateTags -e -d {disc} -s {split} | \
             samtools view -Sb - > {out}').format(thread=str(thread),other=other,db=db_name,fq1=fqFiles[0],
             fq2=fqFiles[1],disc=disc,split=split,out=outBam)
-    print cmd
-    #sarge.run(cmd)
+    print(cmd);sys.stdout.flush()
+    sarge.run(cmd)
 
 
 

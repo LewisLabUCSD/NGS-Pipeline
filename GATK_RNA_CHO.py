@@ -164,7 +164,7 @@ def run_RNA_Vari_Filter(input_file,output_file):
 @check_if_uptodate(check_file_exists)
 def run_RNA_Baserecalibration_1(input_file,output_file):
     gold_vcf = 'f06_Round1Call/'+re.sub('\.bam$','.gold.vcf',input_file).split('/')[-1]
-    RNA_BaseRecalibrator_1(input_file,output_file,gatk,ref_fa,gold_vcf,thread)
+    RNA_BaseRecalibrator_1(input_file,output_file,gatk,ref_fa,gold_vcf,thread='1')
 # step 2
 @follows(run_RNA_Baserecalibration_1)
 @transform(run_realign,formatter('.*\.reali\.bam'),'f07_BaseRecal/{basename[0]}.post_table')
