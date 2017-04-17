@@ -30,9 +30,8 @@ db_path = p.STAR_index_path
 # htseq parameter
 htseq_anno_source = p.htseq_anno_source
 strand = p.strand_specific
+id_name = p.id_name
 
-id_file = p.gene2ref_seq
-tax_id = p.tax_id
 contact = p.contact
 #===============================================================================
 #                    Pipeline part
@@ -114,25 +113,26 @@ def remove_bam():
 def run_htseq(input_file,output_file):
     htseq_count(input_file,output_file,annotation,strand,htseq_anno_source)
 #--------------------- 6. ID convertion -----------------------------------------------------
-@active_if(htseq_anno_source=='ncbi')
+@active_if(htseq_anno_source!='')
 @follows(run_htseq)
 @transform(run_htseq,suffix('.txt'),'.count.txt')
 def id_convert(input_file,output_file):
     print(input_file+ '--->' + output_file)
-    id_symbol_conversion(input_file,output_file,id_file,tax_id)
+    # 1. get dictionary
+    if id_name == 'id':
+        sym2ID = 'yes'
+    else:
+        sym2ID = 'no'
+    dic = get_gene_name_id_dic(annotation,htseq_anno_source,sym2ID)
+    gene_id_name_convert(input_file,output_file,dic)
 #--------------------- 7. return finish message -----------------------------------------------------
-if htseq_anno_source == 'ncbi':
-    @follows(run_htseq,id_convert)
-    def last_function():
-        Message('RNA_count finished',contact)
-else:
-    @follows(run_htseq)
-    def last_function():
-        Message('RNA_count finished',contact)
+@follows(id_convert)
+def last_function():
+    Message('RNA_count finished',contact)
 
 if __name__ == '__main__':
     try:
-        pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
+        pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = False, 
                  touch_files_only=False,verbose=5)
     except:
         Message('RNA_count failed',contact)

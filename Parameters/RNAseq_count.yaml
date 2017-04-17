@@ -14,11 +14,9 @@ adapter: ''
 star_jobs_per_batch: 2
 STAR_index_path:  '/data/genome/cho/cho_STAR_Db'  #'/opt/genome/cho/STAR_Db'  # alinger index
 
-htseq_anno_source: 'ncbi'  # if annotation file is from ensembl, should set as 'ensembl'
+htseq_anno_source: ''  # alternative values: 'ncbi', 'ensembl'.
 strand_specific: 'no'  # 'yes, no, reverse'
-# other parameters
-gene2ref_seq: '/data/shangzhong/Database/gene2refseq.gz'
-tax_id: '10029' # taxonomy id, should be set if htseq_anno_source is ncbi
+id_name: 'id' # if you want gene id in the count result, set 'id', if you want gene name, set 'name'
 
 
 
