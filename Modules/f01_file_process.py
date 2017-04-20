@@ -41,32 +41,43 @@ def list_fq_files(file_path):
     """
     This function list all fastq files into a list
     """
-    allFiles = [f for f in os.listdir(file_path) if f.endswith(".fastq.gz") or f.endswith(".fq.gz")]
-    allFiles = natsorted(allFiles)
-    fastqFiles = []  # this list is going to stroe the paired or single file for running aligner
-    while len(allFiles) > 1:           # this is to append the single end or pair end files into a list.
-        if allFiles[0].endswith(".fastq.gz"):
-            index = allFiles[0].index(".fastq.gz")
-            if allFiles[1][index-2:index] == '_2':
-                fastqFiles.append(allFiles[:2])
-                del allFiles[:2]
-            else:
-                fastqFiles.append(allFiles[:1])
-                del allFiles[:1]
-        
-        if len(allFiles) != 0:        
-            if allFiles[0].endswith(".fq.gz"):
-                index = allFiles[0].index(".fq.gz")
-                if allFiles[1][index-2:index] == '_2':
-                    fastqFiles.append(allFiles[:2])
-                    del allFiles[:2]
-                else:
-                    fastqFiles.append(allFiles[:1])
-                    del allFiles[:1]
-    if len(allFiles) == 1:
-        fastqFiles.append(allFiles)
-
+    fst_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_1.fastq.gz") or f.endswith("_1.fq.gz")])
+    snd_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_2.fastq.gz") or f.endswith("_2.fq.gz")])
+    fastqFiles = [] # this list is going to stroe the paired or single file for running aligner
+    if snd_files == []:
+        fastqFiles = [[f] for f in fst_files]
+    elif len(fst_files) == len(snd_files):
+        fastqFiles = [[f1,f2] for f1,f2 in zip(fst_files,snd_files)]
+    else:
+        raise ValueError('input has single end and paired end mixed')
     return fastqFiles
+
+#     allFiles = [f for f in os.listdir(file_path) if f.endswith(".fastq.gz") or f.endswith(".fq.gz")]
+#     allFiles = natsorted(allFiles)
+#     fastqFiles = []  # this list is going to stroe the paired or single file for running aligner
+#     while len(allFiles) > 1:           # this is to append the single end or pair end files into a list.
+#         if allFiles[0].endswith(".fastq.gz"):
+#             index = allFiles[0].index(".fastq.gz")
+#             if allFiles[1][index-2:index] == '_2':
+#                 fastqFiles.append(allFiles[:2])
+#                 del allFiles[:2]
+#             else:
+#                 fastqFiles.append(allFiles[:1])
+#                 del allFiles[:1]
+#         
+#         if len(allFiles) != 0:        
+#             if allFiles[0].endswith(".fq.gz"):
+#                 index = allFiles[0].index(".fq.gz")
+#                 if allFiles[1][index-2:index] == '_2':
+#                     fastqFiles.append(allFiles[:2])
+#                     del allFiles[:2]
+#                 else:
+#                     fastqFiles.append(allFiles[:1])
+#                     del allFiles[:1]
+#     if len(allFiles) == 1:
+#         fastqFiles.append(allFiles)
+# 
+#     return fastqFiles
 
 
 def replace_filename(inputfile,input_pattern,out_pattern):
@@ -128,4 +139,41 @@ def id_symbol_conversion(input_file,output_file,gene2refseq,tax_id,sym2ID='yes')
     symbol_df[['geneid','count']].to_csv(output_file,sep='\t',header=None,index=False)
     os.remove(input_file)
 
-     
+
+
+def get_gene_name_id_dic(gff,source,sym2ID='yes'):
+    '''
+    This function build {gene name: geneid} or {geneid:gene name} dictionary
+    * source: ncbi or ensembl
+    '''
+    df = pd.read_csv(gff,sep='\t',comment='#',header=None)
+    df = df[df[2].values=='gene']
+    df = df.reset_index(drop=True)
+    if source == 'ncbi':
+        gene_pattern = 'gene='
+    elif source == 'ensembl':
+        gene_pattern = 'gene_name='
+    df['geneid'] = df[8].map(lambda x: re.search('(?<=ID=).+?(?=[.$])',x).group(0))
+    df['genename'] = df[8].map(lambda x: re.search('(?<={p}).+?(?=[;$])'.format(p=gene_pattern),x).group(0))
+    # build dictionary
+    if sym2ID=='yes':
+        return df.set_index('genename')['geneid'].to_dict()
+    else:
+        return df.set_index('geneid')['genename'].to_dict()
+
+    
+
+def gene_id_name_convert(in_file,out_file,gene_id_name_dic):
+    # 1. transfer id
+    df = pd.read_csv(in_file,sep='\t',header=None,names=['id_before','count'])
+    df['id_after'] = df['id_before'].map(lambda x: gene_id_name_dic[x.split('.')[0]] if x.split('.')[0] in gene_id_name_dic else x.split('.')[0])
+    # 2. output
+    df[['id_after','count']].to_csv(out_file,sep='\t',header=None,index=False)
+#     os.remove(in_file)
+
+
+        
+
+
+
+
