@@ -45,6 +45,7 @@ def list_fq_files(file_path):
     snd_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_2.fastq.gz") or f.endswith("_2.fq.gz")])
     fastqFiles = [] # this list is going to stroe the paired or single file for running aligner
     if snd_files == []:
+        fst_files = natsorted([f for f in os.listdir(file_path) if f.endswith(".fastq.gz") or f.endswith(".fq.gz")])
         fastqFiles = [[f] for f in fst_files]
     elif len(fst_files) == len(snd_files):
         fastqFiles = [[f1,f2] for f1,f2 in zip(fst_files,snd_files)]
