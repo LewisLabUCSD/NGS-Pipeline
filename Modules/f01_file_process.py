@@ -41,8 +41,11 @@ def list_fq_files(file_path):
     """
     This function list all fastq files into a list
     """
-    fst_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_1.fastq.gz") or f.endswith("_1.fq.gz")])
-    snd_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_2.fastq.gz") or f.endswith("_2.fq.gz")])
+    fst_files = natsorted([f for f in os.listdir(file_path) if '_R1_' in f and (f.endswith(".fastq.gz") or f.endswith(".fq.gz"))])
+    snd_files = natsorted([f for f in os.listdir(file_path) if '_R2_' in f and (f.endswith(".fastq.gz") or f.endswith(".fq.gz"))])
+    if fst_files == []:
+        fst_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_1.fastq.gz") or f.endswith("_1.fq.gz")])
+        snd_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_2.fastq.gz") or f.endswith("_2.fq.gz")])
     fastqFiles = [] # this list is going to stroe the paired or single file for running aligner
     if snd_files == []:
         fst_files = natsorted([f for f in os.listdir(file_path) if f.endswith(".fastq.gz") or f.endswith(".fq.gz")])
