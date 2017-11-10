@@ -41,8 +41,11 @@ def list_fq_files(file_path):
     """
     This function list all fastq files into a list
     """
-    fst_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_1.fastq.gz") or f.endswith("_1.fq.gz")])
-    snd_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_2.fastq.gz") or f.endswith("_2.fq.gz")])
+    fst_files = natsorted([f for f in os.listdir(file_path) if '_R1_' in f and (f.endswith(".fastq.gz") or f.endswith(".fq.gz"))])
+    snd_files = natsorted([f for f in os.listdir(file_path) if '_R2_' in f and (f.endswith(".fastq.gz") or f.endswith(".fq.gz"))])
+    if fst_files == []:
+        fst_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_1.fastq.gz") or f.endswith("_1.fq.gz")])
+        snd_files = natsorted([f for f in os.listdir(file_path) if f.endswith("_2.fastq.gz") or f.endswith("_2.fq.gz")])
     fastqFiles = [] # this list is going to stroe the paired or single file for running aligner
     if snd_files == []:
         fst_files = natsorted([f for f in os.listdir(file_path) if f.endswith(".fastq.gz") or f.endswith(".fq.gz")])
@@ -52,6 +55,7 @@ def list_fq_files(file_path):
     else:
         raise ValueError('input has single end and paired end mixed')
     return fastqFiles
+
 
 #     allFiles = [f for f in os.listdir(file_path) if f.endswith(".fastq.gz") or f.endswith(".fq.gz")]
 #     allFiles = natsorted(allFiles)
@@ -124,7 +128,6 @@ def Message(string,email):
     cmd = ('echo {quote}|mailx -s "{string}" {email}').format(quote="",string=string,email=email)
     sarge.run(cmd)
 
-
 def id_symbol_conversion(input_file,output_file,gene2refseq,tax_id,sym2ID='yes'):
     """This function convers count file based on gene symbol to gene id
     * inputfile: 2 columns. ['symbol','count']
@@ -152,10 +155,12 @@ def get_gene_name_id_dic(gff,source,sym2ID='yes'):
     df = df.reset_index(drop=True)
     if source == 'ncbi':
         gene_pattern = 'gene='
+        id_pattern   = 'GeneID\:'
     elif source == 'ensembl':
         gene_pattern = 'gene_name='
-    df['geneid'] = df[8].map(lambda x: re.search('(?<=ID=).+?(?=[.$])',x).group(0))
-    df['genename'] = df[8].map(lambda x: re.search('(?<={p}).+?(?=[;$])'.format(p=gene_pattern),x).group(0))
+        id_pattern   = 'ID='
+    df['geneid'] = df[8].map(lambda x: re.search('(?<={p}).+?(?=[.,;$])'.format(p=id_pattern),x).group(0))
+    df['genename'] = df[8].map(lambda x: re.search('(?<={p}).+?(?=[,;$])'.format(p=gene_pattern),x).group(0))
     # build dictionary
     if sym2ID=='yes':
         return df.set_index('genename')['geneid'].to_dict()

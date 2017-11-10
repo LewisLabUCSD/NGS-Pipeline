@@ -7,6 +7,7 @@ import yaml
 from Modules.Samtools import sortBam,merge_bams
 import shutil
 from Modules.CNVnator import *
+from Bio import SeqIO
 #============ parameters ======================
 parameter_file =  sys.argv[1]
 #parameter_file = '/data/shangzhong/Pacbio/CHOS_illu_DNA/cnv/CNVnator.yaml'
@@ -78,11 +79,11 @@ def run_bwa(input_file,output_file):
 def sort_by_pos(input_file,output_file):
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
     sortBam(input_file,output_file,n,sortType='pos')
-# @follows(sort_by_pos)
-# def remove_bam():
-#     if os.path.exists('bam'): shutil.rmtree('bam')   # remove bam folder
-# merge bam
 @follows(sort_by_pos)
+def remove_bam():
+    if os.path.exists('bam'): shutil.rmtree('bam')   # remove bam folder
+
+@follows(sort_by_pos,remove_bam)
 @mkdir(fastqFiles,formatter(),'{path[0]}/mergeBam')
 @merge(sort_by_pos,'mergeBam/merge.bam')
 @check_if_uptodate(check_file_exists)

@@ -103,7 +103,7 @@ def HardFilter(raw_gvcf,gold_snp_indel,gatk,ref_fa,thread):
     this function will apply artificial filter for snp and indel
     """
     snp_filter = re.sub('g\.vcf$','snp.vcf',raw_gvcf)
-    indel_filter = re.sub('g\.vcf$','indel.vcf')
+    indel_filter = re.sub('g\.vcf$','indel.vcf',raw_gvcf)
     SelectVariants(raw_gvcf,snp_filter,gatk,ref_fa,'SNP',str(thread))
     SelectVariants(raw_gvcf,indel_filter,gatk,ref_fa,'INDEL',str(thread))
     snpHardFilter(snp_filter,gold_snp_indel[0],gatk,ref_fa)
@@ -115,7 +115,7 @@ def BaseRecalibrator_1(realiBam,table,gold_pair,gatk,ref_fa,thread):
     '''
     cmd = ('java -jar {gatk} -T BaseRecalibrator -R {ref_fa} '
            '-I {realignbam} -knownSites {snp} -knownSites {indel} '
-           '-o {output} -nct {t}').format(gatk=gatk,ref_fa=ref_fa,
+           '-o {output} -nct {thread}').format(gatk=gatk,ref_fa=ref_fa,
                 realignbam=realiBam,snp=gold_pair[0],indel=gold_pair[1],
                 output=table,thread=str(thread))
     print(cmd);sys.stdout.flush()
@@ -126,7 +126,7 @@ def BaseRecalibrator_2(realiBam,post_table,table,gold_pair,gatk,ref_fa,thread):
     '''Step 2 of base recalibration: get post table'''
     cmd = ('java -jar {gatk} -T BaseRecalibrator -R {ref_fa} '
            '-I {realignbam} -knownSites {snp} -knownSites {indel} -BQSR {table} '
-           '-o {output} -nct {thread} && ').format(gatk=gatk,ref_fa=ref_fa,
+           '-o {output} -nct {thread}').format(gatk=gatk,ref_fa=ref_fa,
             realignbam=realiBam,snp=gold_pair[0],indel=gold_pair[1],output=post_table,table=table,thread=str(thread))
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
@@ -136,7 +136,7 @@ def BaseRecalibrator_3(table,plot,post_table,gatk,ref_fa):
     '''Step 3 of base recalibration: compare table and post table
     '''
     cmd = ('java -jar {gatk} -T AnalyzeCovariates -R {ref_fa} '
-           '-before {table} -after {post_table} -plots {output}').format(
+           '-before {table} -after {post_table} -plots {output}.pdf').format(
             gatk=gatk,ref_fa=ref_fa,table=table,post_table=post_table,output=plot)
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
@@ -165,7 +165,7 @@ def CombineSNPandINDEL(vcfFiles,outvcf,gatk,ref_fa,otherParams=[]):
     other = ' '.join(otherParams)
     cmd = ('java -jar {gatk} -R {ref_fa} -T CombineVariants '
            '{varis} -o {outputVcf} {other}').format(gatk=gatk,ref_fa=ref_fa,
-            varis=variCmd,outputVcf=outvcf,argu=other)
+            varis=variCmd,outputVcf=outvcf,other=other)
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
 
