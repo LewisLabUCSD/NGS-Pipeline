@@ -29,7 +29,7 @@ adapter = p.adapter
 star_batch = p.star_jobs_per_batch
 star_db = p.star_index
 run_pass = p.star_pass
-other_params = p.other_params
+other_params = p.star_params
 
 contact = p.contact
 #===============================================================================
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     try:
 #         pipeline_printout(sys.stdout, [last_function], verbose=3)
         pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
-                    touch_files_only=False)
+                    touch_files_only=False,verbose=5)
     except:
         Message('get bam failed',contact)
         

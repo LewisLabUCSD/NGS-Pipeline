@@ -1,6 +1,7 @@
 import sarge
 import os
 import gzip
+import sys
 
 def get_phred_score(fq):
     """This function get phred score of fastq.gz file
@@ -47,7 +48,7 @@ def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file='',min_len=
     else:
         adaptCmd = ''
     cmd = trimCmd1st + adaptCmd + trimCmd2nd
-    print(cmd)
+    print(cmd);sys.stdout.flush()
     sarge.run(cmd)
     for un in unpair:
         if os.path.exists(un):

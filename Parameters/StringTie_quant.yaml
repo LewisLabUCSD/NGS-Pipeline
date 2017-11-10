@@ -1,10 +1,10 @@
 contact: '8582636967@txt.att.net' # can also be email address
 RawDataPath: '/data/shangzhong/Proteogenomics/fq'
-thread: 12
+thread: 18
 QC: False
 # database parameters
 ref_fa: '/data/genome/hamster/picr/picr.fa'
-gff: '/data/genome/hamster/picr/picr_draft.gff'
+gff: '/data/genome/hamster/picr/picr_draft.gff3'
 gtf: '/data/genome/hamster/picr/picr_draft.gtf'
 # tool specific parameters
 trim_reads: True

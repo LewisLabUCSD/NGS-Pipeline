@@ -4,6 +4,8 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 mpl.style.use('ggplot')
+
+
 def make_tag_directory(in_bam,tag_dir,ref_fa):
     '''make tag directory which extract mapping position into tsv file
     '''
@@ -44,6 +46,7 @@ def hist(tag_dir,hist_out,ref_fa,anno,mode='tss',peak='',region=4000,res=10,pc=3
         cmd = ('annotatePeaks.pl {peak} {ref_fa} {anno} -size {size} -hist {bin} -d {dir} -pc {pc} > {out}').format(
                     peak=peak,ref_fa=ref_fa,anno=anno,size=str(region),bin=str(res),dir=tag_dir,pc=str(pc),out=hist_out)
     sarge.run(cmd)
+    
     
 def hist_plot(hist_out):
     #Visualize histogram.
@@ -103,10 +106,14 @@ def annotate_peaks(peak_file,output_file,ref_fa,annotation):
 
 
 def filter_anno_peak(in_peak_file,filter_peak_file):
-    df = pd.read_csv(in_peak_file,sep='\t',header=None,skiprows=0)
+    '''this function extracts the reliable TSS from the peak file
+    The rule is: for each 5GRO, get overlap of peaks against different GROseq.
+    Then get union set from pevious peaks.
+    '''
+    df = pd.read_csv(in_peak_file,sep='\t',header=0)
     gro5 = []
     gro = []
-    for f in df[6]:
+    for f in df['Focus Ratio/Region Size']:
         files = f.split('|')
         for sub_f in files: # sub_f is peak file result
             peaks = sub_f.split('_and_')  # peaks has 5gro file and gro file name
@@ -118,9 +125,27 @@ def filter_anno_peak(in_peak_file,filter_peak_file):
                         gro5.append(p)
                     else:
                         gro.append(p)
+    print gro5,gro
+    def extract_peak(gro5,gro,fns):
+        '''fns is the splited filename in 6th column of annotated peak file'''
+        keep = []
+        res = True
+        for g5 in gro5:
+            keep.append([g5+'_and_'+g in fns for g in gro])
+        for k in keep:
+            if False in k:
+                res=False
+        return res
+        
     # filter out the annopeak
-    df = df.apply()
-    
+    cri = df['Focus Ratio/Region Size'].map(lambda x: extract_peak(gro5,gro,x))
+    df = df[cri]
+    df.to_csv(filter_peak_file,sep='\t',index=False)
+
+# if __name__ == '__main__':
+#     in_peak_file = '/data/shangzhong/TSS/fq/f05_annoPeaks/merge.anno'
+#     filter_peak_file = '/data/shangzhong/TSS/fq/f05_annoPeaks/merge_filter.anno'
+#     filter_anno_peak(in_peak_file,filter_peak_file)
                 
             
     
