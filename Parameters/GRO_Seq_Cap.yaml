@@ -1,17 +1,17 @@
-contact: '8582636967@txt.att.net' # can also be email address
-RawDataPath: '/data/shangzhong/TSS/ATAC'
-thread: 12
+contact: 'shl198@eng.ucsd.edu' # can also be email address
+RawDataPath: '/data/shangzhong/TSS/fq'
+thread: 6
 QC: False
 # database parameters
 ref_fa: '/data/genome/hamster/picr/picr.fa'
-gff: '/data/genome/hamster/picr/picr_draft.gff'
+gff: '/data/genome/hamster/picr/picr.gff3'
 # tool specific parameters
 trim_reads: False
 trimmomatic_path: '/home/shangzhong/Installation/Trimmomatic-0.32/Trimmomatic-0.33/trimmomatic-0.33.jar'
 trim_jobs_per_batch: 6
-adapter: ''
+adapter: '/data/shangzhong/TSS/fq/Gro_adapter.txt'
 
-star_jobs_per_batch: 2
+star_jobs_per_batch: 1
 STAR_index_path:  '/data/genome/hamster/picr/picr_STAR_Db'  #'/opt/genome/cho/STAR_Db'  # alinger index
 
 

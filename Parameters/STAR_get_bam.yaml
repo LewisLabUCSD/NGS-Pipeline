@@ -16,6 +16,8 @@ star_jobs_per_batch: 2
 star_index: '/data/genome/hamster/multi_pacbio_assemble/picr_STAR_Db'
 star_pass: 1
 
+star_params: ['']  # should be a list of strings
+
 
 
 

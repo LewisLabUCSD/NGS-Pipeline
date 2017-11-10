@@ -76,8 +76,7 @@ def bwa_Db(db_path,ref_fa):
     """build bwa index"""
     if not os.path.exists(db_path):
         os.mkdir(db_path)
-    os.chdir(db_path)
-    cmd = ('bwa index -p bwa -a bwtsw {fa}').format(fa=ref_fa)
+    cmd = ('bwa index -p {db_path}/bwa -a bwtsw {fa}').format(fa=ref_fa,db_path=db_path)
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
     
