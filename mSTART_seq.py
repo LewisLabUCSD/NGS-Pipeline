@@ -10,7 +10,7 @@ import itertools
 
 #============ parameters ======================
 parameter_file =  sys.argv[1]
-# parameter_file = '/home/shangzhong/Codes/NGS-Pipeline/Parameters/GRO_Seq_Cap.yaml'
+# parameter_file = '/data/isshamie/TSS_CHO/mSTART'
 with open(parameter_file,'r') as f:
     doc = yaml.load(f)
 p = dic2obj(**doc)
@@ -110,9 +110,9 @@ def make_tag(input_bam,out_dir):
     hist_plot(hist_out)
 #--------------------- 5. find peaks ------------------------------------------------------
 def get_input_for_peak_call():
-    gro_cap = [f for f in os.listdir('f03_tags') if '5GRO' in f and 'contr' not in f]
+    gro_cap = [f for f in os.listdir('f03_tags') if 'mSTART' in f and 'input' not in f]
 #     gro_cap_ctr = [[f for f in os.listdir('f03_tags') if 'contr' in f]]
-    gro_seq = [f for f in os.listdir('f03_tags') if '5GRO' not in f]
+    gro_seq = [f for f in os.listdir('f03_tags') if 'input' in f]
     comb = list(itertools.product(gro_cap,gro_seq))
     for com in comb:
         out = com[0] + '_and_' + com[1]
@@ -123,36 +123,37 @@ def get_input_for_peak_call():
 @files(get_input_for_peak_call)
 def find_peak(input_files,output_file):
     find_peaks(input_files[0],output_file,'tss',input_files[1],['-F 2'])
-#--------------------- 6. merge peaks ------------------------------------------------------
-@follows(find_peak)
-@merge(find_peak,'f04_peaks/merge.peak')
-def merge_peak(input_files,output_file):
-    merge_peaks(input_files,output_file,150)
-#--------------------- 6. annotate peaks ------------------------------------------------------
-@jobs_limit(thread)
-@follows(merge_peak)
-@mkdir(fastqFiles,formatter(),'{path[0]}/f05_annoPeaks')
-@transform(merge_peak,formatter('\.peak'),'f05_annoPeaks/{basename[0]}.anno')
-@check_if_uptodate(check_file_exists)
-def anno_peak(input_file,output_file):
-    annotate_peaks(input_file,output_file,ref_fa,annotation)
-#--------------------- 7. hist peaks ------------------------------------------------------
-@jobs_limit(thread)
-@follows(anno_peak)
-@mkdir(fastqFiles,formatter(),'{path[0]}/f06_histPeaks')
-@transform(find_peak,formatter('\.peak'),'f06_histPeaks/{basename[0]}.hist')
-@check_if_uptodate(check_file_exists)
-def peak_cov_hist(input_file,output_file): # input is peak file
-    gro_cap = [f for f in os.listdir('f03_tags') if '5GRO' in f]
-    tag = ['f03_tags/' + t for t in gro_cap if t in input_file]
-    hist(tag[0],output_file,ref_fa,annotation,mode='peak',peak=input_file,region=4000,res=25,pc=1)
-    hist_plot(output_file)
+# #--------------------- 6. merge peaks ------------------------------------------------------
+# @follows(find_peak)
+# @merge(find_peak,'f04_peaks/merge.peak')
+# def merge_peak(input_files,output_file):
+#     merge_peaks(input_files,output_file,150)
+# #--------------------- 6. annotate peaks ------------------------------------------------------
+# @jobs_limit(thread)
+# @follows(merge_peak)
+# @mkdir(fastqFiles,formatter(),'{path[0]}/f05_annoPeaks')
+# @transform(merge_peak,formatter('\.peak'),'f05_annoPeaks/{basename[0]}.anno')
+# @check_if_uptodate(check_file_exists)
+# def anno_peak(input_file,output_file):
+#     annotate_peaks(input_file,output_file,ref_fa,annotation)
+# #--------------------- 7. hist peaks ------------------------------------------------------
+# @jobs_limit(thread)
+# @follows(anno_peak)
+# @mkdir(fastqFiles,formatter(),'{path[0]}/f06_histPeaks')
+# @transform(find_peak,formatter('\.peak'),'f06_histPeaks/{basename[0]}.hist')
+# @check_if_uptodate(check_file_exists)
+# def peak_cov_hist(input_file,output_file): # input is peak file
+#     gro_cap = [f for f in os.listdir('f03_tags') if '5GRO' in f]
+#     tag = ['f03_tags/' + t for t in gro_cap if t in input_file]
+#     hist(tag[0],output_file,ref_fa,annotation,mode='peak',peak=input_file,region=4000,res=25,pc=1)
+#     hist_plot(output_file)
 
 #--------------------- 8. merge peaks ------------------------------------------------------
 
-@follows(peak_cov_hist)
+# @follows(peak_cov_hist)
+@follows(find_peak)
 def last_function():
-    Message('GroCap finished',contact)    
+    Message('mSTART finished',contact)    
 
 
 if __name__ == '__main__':
@@ -161,6 +162,6 @@ if __name__ == '__main__':
         pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = False, 
                     touch_files_only=False,verbose=20)
     except:
-        Message('GroCap failed',contact)
+        Message('mSTART failed',contact)
     
 
