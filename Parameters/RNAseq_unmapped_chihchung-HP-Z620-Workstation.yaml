@@ -1,0 +1,4 @@
+#########  susan's data
+contact: 'c6kuo@eng.ucsd.edu' # can also be email address
+RawDataPath: '/home/chihchung/GoogleDrive/Sequence/2017_10_12_Sharfstein_Samples/sortBam/'
+thread: 32

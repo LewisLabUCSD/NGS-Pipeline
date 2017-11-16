@@ -1,0 +1,39 @@
+contact: 'c6kuo@eng.ucsd.edu' # can also be email address
+RawDataPath: '/data/curtis/Sequence/all_run'
+thread: 20
+QC: False
+
+rna96_seq_df: '../ppi/databases/secretome_samples_for_RNAseq_170906.csv'
+use_seq: 'exp'
+
+cufflinks: False
+
+# database parameters
+# database parameters
+#ref_fa: '/home/curtis/NGS-Pipeline/chr_RNA96.fa'
+#gff: '/home/curtis/NGS-Pipeline/chr_RNA96.gff'
+
+cho_assembly_fa: '/data/curtis/genome/cho/chok1.fa'
+cho_assembly_gff: '/data/curtis/genome/cho/chok1.gff'
+
+ref_fa: '/data/curtis/genome/cho/chok1_96_{use_seq}.fa'
+gff: '/data/curtis/genome/cho/chok1_96_{use_seq}.gff'
+# tool specific parameters
+trim_reads: False
+trimmomatic_path: '/home/shangzhong/Installation/Trimmomatic-0.32/Trimmomatic-0.33/trimmomatic-0.33.jar'
+trim_jobs_per_batch: 6
+adapter: ''
+
+star_jobs_per_batch: 2
+STAR_index_path:  '/data/curtis/genome/cho/stardb_96combined2'  #'/opt/genome/cho/STAR_Db'  # alinger index
+
+htseq_anno_source: 'ncbi'  # if annotation file is from ensembl, should set as 'ensembl'
+strand_specific: 'no'  # 'yes, no, reverse'
+# other parameters
+gene2ref_seq: '/data/shangzhong/Database/gene2refseq.gz'
+tax_id: '10029' # taxonomy id, should be set if htseq_anno_source is ncbi, chinese hamster
+
+
+
+
+

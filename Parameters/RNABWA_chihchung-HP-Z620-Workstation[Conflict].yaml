@@ -1,0 +1,66 @@
+contact: 'c6kuo@eng.ucsd.edu' # can also be email address
+RawDataPath: '/home/chihchung/GoogleDrive/Sequence/2017_10_12_Sharfstein_Samples/'
+thread: 32
+QC: False
+
+genomeSize: 'small'
+use_seq: 'exp'
+cufflinks: False
+# database parameters
+#ref_fa: '/home/chihchung/GoogleDrive/NGS-Pipeline/chr_RNA96.fa'
+#gff: '/home/chihchung/GoogleDrive/NGS-Pipeline/chr_RNA96.gff'
+
+ref_fa: '/home/chihchung/GoogleDrive/collaboration/2017_10_12_Sharfstein_Samples/BWA_scaffold_IGGI_trinity.fasta'
+#gff: '/mnt/nvme0n1p1/data/genome/cho/chok1_96_{use_seq}.gff'
+# tool specific parameters
+trim_reads: False
+trimmomatic_path: '/home/chihchung/Installation/Trimmomatic-0.36/trimmomatic-0.36.jar'
+trim_jobs_per_batch: 6
+adapter: ''
+
+star_jobs_per_batch: 3
+STAR_index_path:  '/mnt/nvme0n1p1/data/genome/bwa_index'  #'/opt/genome/cho/STAR_Db'  # alinger index
+#STAR_index_path:  '/mnt/nvme0n1p1/data/genome/starindex/stardb1'  #'/opt/genome/cho/STAR_Db'  # alinger index
+
+htseq_anno_source: 'ncbi'  # if annotation file is from ensembl, should set as 'ensembl'
+strand_specific: 'no'  # 'yes, no, reverse'
+# other parameters
+gene2ref_seq: '/mnt/nvme0n1p1/data/genome/Database/gene2refseq.gz'
+tax_id: '10029' # taxonomy id, should be set if htseq_anno_source is ncbi, chinese hamste/mnt/nvme0n1p1/data/genome/ch:o
+
+
+####### Johan's dataset
+#contact: 'c6kuo@eng.ucsd.edu' # can also be email address
+#RawDataPath: '/mnt/nvme0n1p1/data/J.Rockberg_16_04/IL22/'
+##RawDataPath: '/mnt/nvme0n1p1/data/test_fqgz'
+##RawDataPath: '/home/chihchung/GoogleDrive/Sequence/J.Rockberg_16_04/'
+#thread: 32
+#QC: False
+#
+#genomeSize: 'small'
+#use_seq: 'exp'
+#cufflinks: False
+## database parameters
+##ref_fa: '/home/chihchung/GoogleDrive/NGS-Pipeline/chr_RNA96.fa'
+##gff: '/home/chihchung/GoogleDrive/NGS-Pipeline/chr_RNA96.gff'
+#
+#cho_assembly_fa: '/mnt/nvme0n1p1/data/genome/cho/chok1.fa'
+#cho_assembly_gff: '/mnt/nvme0n1p1/data/genome/cho/chok1.gff'
+#
+#ref_fa: '/home/chihchung/GoogleDrive/ppi/databases/XM_017000121_IL24CSD.fa'
+##gff: '/mnt/nvme0n1p1/data/genome/cho/chok1_96_{use_seq}.gff'
+## tool specific parameters
+#trim_reads: False
+#trimmomatic_path: '/home/chihchung/Installation/Trimmomatic-0.36/trimmomatic-0.36.jar'
+#trim_jobs_per_batch: 6
+#adapter: ''
+#
+#star_jobs_per_batch: 3
+#STAR_index_path:  '/mnt/nvme0n1p1/data/genome/bwa_index'  #'/opt/genome/cho/STAR_Db'  # alinger index
+##STAR_index_path:  '/mnt/nvme0n1p1/data/genome/starindex/stardb1'  #'/opt/genome/cho/STAR_Db'  # alinger index
+#
+#htseq_anno_source: 'ncbi'  # if annotation file is from ensembl, should set as 'ensembl'
+#strand_specific: 'no'  # 'yes, no, reverse'
+## other parameters
+#gene2ref_seq: '/mnt/nvme0n1p1/data/genome/Database/gene2refseq.gz'
+#tax_id: '10029' # taxonomy id, should be set if htseq_anno_source is ncbi, chinese hamste/mnt/nvme0n1p1/data/genome/ch:o
