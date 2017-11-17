@@ -55,7 +55,7 @@ def STAR(fastqFiles,outSamFile,db_path,thread=1,annotation='',otherParameters=['
     if os.path.exists(outSamFile+'_STARgenome'):
         shutil.rmtree(outSamFile+'_STARgenome')
     
-    
+
 def BLASR(faFile,outBam,ref_fa,thread,otherParameters=['']):
     """This function runs BLASR"""
     
@@ -72,12 +72,19 @@ def BLASR(faFile,outBam,ref_fa,thread,otherParameters=['']):
 #===============================================================================
 #                         bwa
 #===============================================================================
-def bwa_Db(db_path,ref_fa):
-    """build bwa index"""
-    if not os.path.exists(db_path):
-        os.mkdir(db_path)
+def bwa_Db(db_path, ref_fa, genomeSize='large'):
+    """
+    This function build db for bwa
+    * bwaDb: str. Pathway to store the index
+    * ref_fa: str. Reference genome fa file.
+    * thread: int. Numbre of thread
+    """
+    BWT_algorithm = 'bwtsw' if genomeSize== 'large' else 'is'
+    if not os.path.exists(db_path): os.mkdir(db_path)
     os.chdir(db_path)
-    cmd = ('bwa index -p bwa -a bwtsw {fa}').format(fa=ref_fa)
+    cmd = ('bwa index -p {bwadb_prefix} -a {alg} {fa}').format(bwadb_prefix = os.path.split(ref_fa)[-1],
+                                                               alg = BWT_algorithm,
+                                                               fa=ref_fa)
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
     
