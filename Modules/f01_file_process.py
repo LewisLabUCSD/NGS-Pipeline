@@ -67,6 +67,27 @@ def list_fq_files(file_path):
         fastqFiles.append(allFiles)
 
     return fastqFiles
+def list_ext_files(file_path, ext = '.sort.bam'):
+    """
+    This function list all fastq files into a list
+    """
+    allFiles = [f for f in os.listdir(file_path) if f.endswith(ext)]
+    allFiles = natsorted(allFiles)
+    fastqFiles = []  # this list is going to stroe the paired or single file for running aligner
+    while len(allFiles) > 1:           # this is to append the single end or pair end files into a list.
+        if allFiles[0].endswith(ext):
+            index = allFiles[0].index(ext)
+            if allFiles[1][index-2:index] == '_2':
+                fastqFiles.append(allFiles[:2])
+                del allFiles[:2]
+            else:
+                fastqFiles.append(allFiles[:1])
+                del allFiles[:1]
+
+    if len(allFiles) == 1:
+        fastqFiles.append(allFiles)
+
+    return fastqFiles
 
 
 def replace_filename(inputfile,input_pattern,out_pattern):
@@ -126,6 +147,6 @@ def id_symbol_conversion(input_file,output_file,gene2refseq,tax_id,sym2ID='yes')
     symbol_df['geneid'] = symbol_df['symbol'].map(lambda x: sym_id_dict[x] if x in sym_id_dict else x)
     # 3. output
     symbol_df[['geneid','count']].to_csv(output_file,sep='\t',header=None,index=False)
-    os.remove(input_file)
+    # os.remove(input_file)
 
      
