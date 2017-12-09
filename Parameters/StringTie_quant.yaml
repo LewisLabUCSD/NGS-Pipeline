@@ -5,7 +5,6 @@ QC: False
 # database parameters
 ref_fa: '/data/genome/hamster/picr/picr.fa'
 gff: '/data/genome/hamster/picr/picr_draft.gff3'
-gtf: '/data/genome/hamster/picr/picr_draft.gtf'
 # tool specific parameters
 trim_reads: True
 trimmomatic_path: '/home/shangzhong/Installation/Trimmomatic-0.32/Trimmomatic-0.33/trimmomatic-0.33.jar'
