@@ -1,4 +1,4 @@
-contact: 'shl198@eng.ucsd.edu' # can also be email address
+contact: 'user@gmail.com' # can be email address or phone_number@txt.att.net
 RawDataPath: '/data/shangzhong/TSS/fq'
 thread: 6
 QC: False

@@ -1,4 +1,4 @@
-contact: '8582636967@txt.att.net' # can also be email address
+contact: 'user@gmail.com' # can be email address or phone_number@txt.att.net
 RawDataPath: '/data/shangzhong/Pacbio/fa'
 thread: 24
 # database parameters
