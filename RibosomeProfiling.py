@@ -22,6 +22,7 @@ annotation = p.gff
 # trimmomatic parameter
 trim = p.trim_reads
 trim_batch = p.trim_jobs_per_batch
+min_len = p.min_len
 adapter = p.adapter
 # star parameter
 hisat2_batch = p.hisat2_jobs_per_batch
@@ -59,7 +60,7 @@ def run_QC1(input_file,output_file):
 @files(trim_parameters)
 def trim_reads(input_file,output_file):
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
-    conda_Trimmomatic(input_file,output_file,n,adapter,20)
+    conda_Trimmomatic(input_file,output_file,n,adapter,min_len)
     remove(input_file)
     # run fastqc after trimming
     if QC:
@@ -126,7 +127,8 @@ def sort_by_pos(input_file,output_file):
 # @follows(sort_by_pos)
 # def remove_bam():
 #     if os.path.exists('f01rRNA_bam'): shutil.rmtree('f01rRNA_bam')   # remove bam folder
- 
+
+
 @follows(sort_by_pos)
 def last_function():
     Message('Riboseq finished',contact)
@@ -134,6 +136,6 @@ def last_function():
 if __name__ == '__main__':
     try:
         pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
-                 touch_files_only=False,verbose=15)
+                 touch_files_only=False,verbose=5)
     except:
         Message('Riboseq failed',contact)

@@ -14,7 +14,7 @@ adapter: ''
 star_jobs_per_batch: 1 # at most 2
 STAR_index_path:  '/data/genome/cho/cho_STAR_Db'  #'/opt/genome/cho/STAR_Db'  # alinger index
 
-htseq_anno_source: ''  # alternative values: 'ncbi', 'ensembl' or leave it empty.
+htseq_anno_source: 'ncbi'  # alternative values: 'ncbi', 'ensembl' or leave it empty.
 strand_specific: 'no'  # 'yes, no, reverse'
 id_name: 'id' # if you want gene id in the count result, set 'id', if you want gene name, set 'name'
 

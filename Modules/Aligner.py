@@ -116,8 +116,43 @@ def bwa_samblaster(fqFiles,outBam,db_name,thread,otherParameters=['']):
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
 
-
-
-
+#===============================================================================
+#                         HISAT2
+#===============================================================================
+def hisat2_Db(ref_fa,db,thread=1):
+    """
+    """
+    cmd = ('hisat2-build -p {t} {ref} {name} ').format(t=str(thread),ref=ref_fa,name=db)
+    print(cmd);sys.stdout.flush()
+    sarge.run(cmd)
     
 
+
+def hisat2(fqFile,outBam,db_name,thread,otherParameters=['']):
+    """
+    """
+    if otherParameters != ['']:
+        other =  ' '.join(otherParameters) + ' '
+    else:
+        other = ''
+    if len(fqFile) == 1:
+        hisat2Cmd = ('hisat2 -x {db} -U {fq} -t {other} -p {thread} '
+                     '| samtools view -bh - > {out}').format(db=db_name,fq=fqFile[0],
+                      other=other,thread=str(thread),out=outBam)
+    else:
+        hisat2Cmd = ('hisat2 -x {db} -1 {fq1} -2 {fq2} -t {other} -p {thread} '
+                     '| samtools view -bh - > {out}').format(db=db_name,fq1=fqFile[0],fq2=fqFile[1],
+                    other=other,thread=str(thread),out=outBam)
+    
+    print(hisat2Cmd);sys.stdout.flush()
+    sarge.run(hisat2Cmd)
+
+#===============================================================================
+#                     ngmlr
+#===============================================================================
+def ngmlr(in_fa,outBam,ref_fa,thread):
+    '''run nglmr for better SV detection using pacbio'''
+    cmd = ('ngmlr -t {thread} -r {ref} -q {fa} | samtools view -hb - > outBam').format(
+                            thread=str(thread),ref=ref_fa,fa=in_fa)
+    print(cmd);sys.stdout.flush()
+    sarge.run(cmd)
