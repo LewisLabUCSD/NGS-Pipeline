@@ -103,3 +103,22 @@ class ncbi_gff(object):
 # ref_dic = SeqIO.index('/data/genome/hamster/picr/picr.fa','fasta')
 # res = obj.get_gene_seq(ref_dic,'NM_001246795',id_type='tr')
 # print res
+
+
+from Bio import SeqIO
+
+def getr_tRNA(fa,gff,output):
+    '''get rRNA and tRNA sequence
+    * output: fa file stores rtRNA sequence'''
+    index = SeqIO.index(fa,'fasta')
+    with open(gff) as f, open(output,'w') as out:
+        for line in f:
+            if line.startswith('#'):continue
+            item = line.strip().split('\t')
+            if item[2] in ['rRNA','tRNA']:
+                name = re.search('(?<=product=).+?(?=$|;)',line).group(0)
+                chrom = item[0]
+                s = int(item[3])
+                e = int(item[4])
+                seq = str(index[chrom].seq[s-1:e])
+                out.write('>'+name + '\n' + seq + '\n')

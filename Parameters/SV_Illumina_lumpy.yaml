@@ -1,4 +1,4 @@
-contact: '8582636967@txt.att.net'
+contact: 'user@gmail.com' # can be email address or phone_number@txt.att.net
 RawDataPath: '/data/shangzhong/Pacbio/CHOS_illu_DNA'
 thread: 16
 # database parameters
