@@ -1,5 +1,6 @@
 import sarge,sys,glob
 import pandas as pd
+from natsort import natsorted 
 
 def stringtie(in_bam,out_gtf,thread,annotation):
     '''
@@ -17,7 +18,7 @@ def merge_stringtie_tpm(path):
     """This function merges tpm fpkm results to one file.
     each file has two columns [geneid, tpm]
     """
-    files = glob.glob(path + '/*.tab')
+    files = natsorted(glob.glob(path + '/*.tab'))
     dfs = []
     for f in files:
         sp = f.split('/')[-1].split('.')[0]
@@ -27,3 +28,4 @@ def merge_stringtie_tpm(path):
         dfs.append(df)
     res_df = pd.concat(dfs,axis=1)
     return res_df
+
