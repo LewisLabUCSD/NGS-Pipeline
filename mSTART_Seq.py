@@ -15,7 +15,7 @@ import inspect
 #============ Load parameters ======================
 parameter_file =  sys.argv[1]
 
-#parameter_file = 'GRO_seq.yaml'
+#parameter_file = 'START_seq.yaml'
 with open(parameter_file,'r') as f:
     doc = yaml.load(f)
 p = dic2obj(**doc)
@@ -55,7 +55,7 @@ marks = ['promoter','Intergenic']
 #===============================================================================
 #                    Pipeline part
 #===============================================================================
-Message('GRO-cap analysis starting',contact)
+Message('START-seq analysis starting',contact)
 os.chdir(file_path)
 
 ##Save the parameters
@@ -82,7 +82,6 @@ def trim_parameters():
 @active_if(trim)
 @jobs_limit(trim_batch)
 @files(trim_parameters)
-@check_if_uptodate(check_file_exists)
 def trim_reads(input_file,output_file):
     print input_file,output_file
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
@@ -100,7 +99,7 @@ def trim_reads(input_file,output_file):
 @jobs_limit(thread)
 @mkdir(fastqFiles,formatter(),'{path[0]}/f01_fastqc')
 @transform(trim_reads,formatter('.*\.f.*?\.gz'),'f01_fastqc/{basename[0]}')
-@check_if_uptodate(check_file_exists)
+#@check_if_uptodate(check_file_exists)
 #@files(trim_parameters)
 def run_QC2(input_file,output_file):
     for fq_in,fq_out in zip(input_file,output_file):
@@ -141,7 +140,7 @@ def run_star(input_file,output_file):
 #--------------------- 4. make tag_directory ------------------------------------------------------
 @follows(run_star)
 @mkdir(fastqFiles,formatter(),'{path[0]}/f03_tags')
-@check_if_uptodate(check_file_exists)
+#@check_if_uptodate(check_file_exists)
 @transform(run_star,formatter('\.bam'),'f03_tags/{basename[0]}')
 def make_tag(input_bam,out_dir):
     print(input_bam,out_dir)
@@ -159,9 +158,8 @@ def make_bedgraph(in_dir,out_files):
 
 # #--------------------- 6. find peaks ------------------------------------------------------
 def get_input_for_peak_call():
-    gro_cap = [f for f in os.listdir('f03_tags') if '5GRO' in f and not 'contr' in f]
-#     gro_cap_ctr = [[f for f in os.listdir('f03_tags') if 'contr' in f]]
-    gro_seq = [f for f in os.listdir('f03_tags') if 'GRO'  in f and not '5GRO' in f and not 'contr' in f]
+    gro_cap = [f for f in os.listdir('f03_tags') if 'mSTART' in f and 'input' not in f]
+    gro_seq = [f for f in os.listdir('f03_tags') if 'input'  in f]
     comb = list(itertools.product(gro_cap,gro_seq))
     for com in comb:
         out = com[0] + '_and_' + com[1] + '_bg_' + str(peak_bg)
@@ -222,7 +220,7 @@ def anno_peak(input_file,output_file):
 @transform(merge_peak,formatter('\.peak'),'f07_histPeaks/{basename[0]}.hist')
 #@check_if_uptodate(check_file_exists)
 def peak_cov_hist(input_file,output_file,pc=0): # input is peak file
-    gro_cap = [f for f in os.listdir('f03_tags') if '5GRO' in f]
+    gro_cap = [f for f in os.listdir('f03_tags') if 'mSTART' in f and not 'input' in f]
     tag = ['f03_tags/' + t for t in gro_cap] # if t in input_file]
     hist(tag[0],output_file,ref_fa,annotation,mode='peak',peak=input_file,region=4000,res=25,pc=pc)
     hist_plot(output_file)
@@ -234,7 +232,7 @@ def peak_cov_hist(input_file,output_file,pc=0): # input is peak file
 @transform(merge_peak,formatter('\.peak'),'f07_histPeaks/{basename[0]}.hist_mrna')
 #@check_if_uptodate(check_file_exists)
 def peak_cov_hist_mrna(input_file,output_file,pc=0): # input is peak file
-    gro_cap = [f for f in os.listdir('f03_tags') if '5GRO' in f]
+    gro_cap = [f for f in os.listdir('f03_tags') if 'mSTART' in f and not 'input' in f]
     tag = ['f03_tags/' + t for t in gro_cap] # if t in input_file]
     print('tag0',tag[0])
     print('input',input_file)
@@ -252,7 +250,7 @@ def peak_cov_hist_mrna(input_file,output_file,pc=0): # input is peak file
 #@check_if_uptodate(check_file_exists)
 def peak_cov_hist_anno(input_file,output_file,pc=0): # input is peak file
     print input_file,output_file
-    gro_cap = [f for f in os.listdir('f03_tags') if '5GRO' in f]
+    gro_cap = [f for f in os.listdir('f03_tags') if 'mSTART' in f and not 'input' in f]
     tag = ['f03_tags/' + t for t in gro_cap]# if t in input_file]
     for mark in marks:
         hist(tag[0],output_file+'_' + mark,ref_fa,annotation,mode='peak',peak=input_file+ '_' + mark,region=4000,res=25,pc=pc)
@@ -262,7 +260,7 @@ def peak_cov_hist_anno(input_file,output_file,pc=0): # input is peak file
 
 @follows(peak_cov_hist_anno)
 def last_function():
-    Message('GRO-cap analysis succeed',contact)
+    Message('START-seq analysis succeed',contact)
     
 if __name__ == '__main__':
     try:
@@ -270,7 +268,7 @@ if __name__ == '__main__':
         pipeline_run([last_function],forcedtorun_tasks = [last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True,
                     touch_files_only=False,verbose=4)#,checksum_level=3)
     except:
-        Message('GRO-cap analysis failed',contact)
+        Message('START-seq analysis failed',contact)
 
 
 '''

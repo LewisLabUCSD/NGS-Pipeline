@@ -26,7 +26,7 @@ def get_phred_score(fq):
     if score_found == False:
         raise 'could not find the phred score, need to manually set'
     
-def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file='',min_len=36):
+def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file='',is_short = False,crop='',min_len=10):
     """This function run trimmomatic to trim reads"""
     # main parameters
     unpair = [f + 'unpair' for f in fqFiles]
@@ -44,10 +44,19 @@ def Trimmomatic(fqFiles,trim_fqFiles,trimmomatic,thread,adapter_file='',min_len=
         trimCmd2nd = 'SLIDINGWINDOW:5:10 LEADING:15 TRAILING:10 MINLEN:{len} TOPHRED33 '.format(len=str(min_len))
     # adapter file
     if adapter_file != '':
-        adaptCmd = 'ILLUMINACLIP:{adapter}:2:30:10 '.format(adapter=adapter_file)
+        if not is_short:
+            adaptCmd = 'ILLUMINACLIP:{adapter}:2:30:10 '.format(adapter=adapter_file)
+        else: 
+            adaptCmd = 'ILLUMINACLIP:{adapter}:0:30:6 '.format(adapter=adapter_file)
     else:
         adaptCmd = ''
-    cmd = trimCmd1st + adaptCmd + trimCmd2nd
+
+    # Crop file
+    if crop != '':
+        cropCmd = 'CROP:{crop} '.format(crop=crop)
+    else:
+        cropCmd = ''
+    cmd = trimCmd1st + adaptCmd + cropCmd + trimCmd2nd
     print(cmd);sys.stdout.flush()
     sarge.run(cmd)
     for un in unpair:
