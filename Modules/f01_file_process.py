@@ -167,7 +167,25 @@ def get_gene_name_id_dic(gff,source,sym2ID='yes'):
     else:
         return df.set_index('geneid')['genename'].to_dict()
 
-    
+
+def gene_id_name_convert_merge(in_file,out_file,gene_id_name_dic):
+    '''
+    * in_file: first row should be column name.
+    '''
+    df = pd.read_csv(in_file,sep='\t',header=0)
+    names = list(df.columns)
+    df.columns = ['id_before'] + names[1:]
+    df['id_after'] = df['id_before'].map(lambda x: gene_id_name_dic[x.split('.')[0]] if x.split('.')[0] in gene_id_name_dic else x.split('.')[0])
+    # 2. output
+    df[['id_after']+names[1:]].to_csv(out_file,sep='\t',header=None,index=False)
+
+if __name__ == "__main__":
+    gff = '/data/genome/cho/chok1.gff'
+    dic = get_gene_name_id_dic(gff,'ncbi',sym2ID='yes')
+    in_file = '/path/to/file'
+    out_file = '/path/to/file'
+    gene_id_name_convert_merge(in_file,out_file,dic)
+
 
 def gene_id_name_convert(in_file,out_file,gene_id_name_dic):
     # 1. transfer id
@@ -175,10 +193,10 @@ def gene_id_name_convert(in_file,out_file,gene_id_name_dic):
     df['id_after'] = df['id_before'].map(lambda x: gene_id_name_dic[x.split('.')[0]] if x.split('.')[0] in gene_id_name_dic else x.split('.')[0])
     # 2. output
     df[['id_after','count']].to_csv(out_file,sep='\t',header=None,index=False)
-#     os.remove(in_file)
 
 
-        
+
+
 
 
 

@@ -1,5 +1,5 @@
 import pandas as pd
-import sarge,os,sys
+import sarge,sys
 def geneMark_ES(ref_fa,other_params=['']):
     '''run geneMark_ES'''
     cmd = ('gmes_petap.pl --ES {other} --sequence {fa}').format(fa=ref_fa,

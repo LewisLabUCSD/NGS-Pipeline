@@ -33,7 +33,7 @@ picard = p.picard
 gatk = p.gatk
 
 bwa_batch = p.bwa_jobs_per_batch
-bwa_Db = p.bwa_Db
+bwa_db = p.bwa_db
 
 sp = p.sample_name
 read_groups = p.read_groups
@@ -84,10 +84,10 @@ def get_fq_and_readgroup():
         out = 'f01_bam/' + re.sub('\.f.*q\.gz','.bam',fq[0])
         yield fq,out,rg
 # build index
-@active_if(not os.path.exists(bwa_Db))
-@follows(trim_reads)
+@active_if(not os.path.exists(bwa_db))
+@follows(trim_reads,run_QC1)
 def bwa_index():
-    bwa_Db(bwa_Db,ref_fa)
+    bwa_Db(bwa_db,ref_fa)
 # align
 @jobs_limit(bwa_batch)
 @follows(bwa_index,trim_reads,run_QC1)
@@ -95,7 +95,7 @@ def bwa_index():
 @files(get_fq_and_readgroup)
 def run_bwa(input_file,output_file,rg):
     n = num_thread2use(bwa_batch,len(fastqFiles),thread)
-    bwa_mem(input_file,output_file,bwa_Db+'/bwa',n,otherParameters=['-R '+rg+'\\\\tPL:illumina\\\\tLB:lib20000\\\\tPU:unit1'])
+    bwa_mem(input_file,output_file,bwa_db+'/bwa',n,otherParameters=['-R '+rg+'\\\\tPL:illumina\\\\tLB:lib20000\\\\tPU:unit1'])
 #--------------------- 5. Sort bam file --------------------------------------------------
 @jobs_limit(trim_batch)
 @follows(run_bwa)
