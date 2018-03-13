@@ -82,6 +82,7 @@ def trim_parameters():
 @active_if(trim)
 @jobs_limit(trim_batch)
 @files(trim_parameters)
+@check_if_uptodate(check_file_exists)
 def trim_reads(input_file,output_file):
     print input_file,output_file
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
@@ -99,7 +100,7 @@ def trim_reads(input_file,output_file):
 @jobs_limit(thread)
 @mkdir(fastqFiles,formatter(),'{path[0]}/f01_fastqc')
 @transform(trim_reads,formatter('.*\.f.*?\.gz'),'f01_fastqc/{basename[0]}')
-#@check_if_uptodate(check_file_exists)
+@check_if_uptodate(check_file_exists)
 #@files(trim_parameters)
 def run_QC2(input_file,output_file):
     for fq_in,fq_out in zip(input_file,output_file):
@@ -140,7 +141,7 @@ def run_star(input_file,output_file):
 #--------------------- 4. make tag_directory ------------------------------------------------------
 @follows(run_star)
 @mkdir(fastqFiles,formatter(),'{path[0]}/f03_tags')
-#@check_if_uptodate(check_file_exists)
+@check_if_uptodate(check_file_exists)
 @transform(run_star,formatter('\.bam'),'f03_tags/{basename[0]}')
 def make_tag(input_bam,out_dir):
     print(input_bam,out_dir)

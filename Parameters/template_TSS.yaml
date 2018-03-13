@@ -1,0 +1,39 @@
+RawDataPath: '/data/isshamie/TSS_script/Test_Set'
+contact: 'isshamie@ucsd.edu' # can also be email address 
+thread: 12
+QC: True
+# database parameters
+ref_fa: '/data/genome/hamster/picr/picr.fa'
+annotation: '/data/genome/hamster/picr/updated_final_sort.gff3'
+
+# tool specific parameters
+trim_reads: True
+trimmomatic_path: '/home/shangzhong/Installation/Trimmomatic-0.32/Trimmomatic-0.33/trimmomatic-0.33.jar'
+trim_jobs_per_batch: 6
+is_homer_trim: True
+adapter: ''
+star_params: []
+star_jobs_per_batch: 2
+star_index_path:  '/data/genome/hamster/picr/picr_STAR_Db'  #'/opt/genome/cho/STAR_Db'  # alinger index
+star_pass: 1
+
+# Peak calling parameters
+is_homer: 1
+homer_peak_window: 150
+homer_peak_background_fold: 2
+type_merge: 'all' #'all','one' , for downstream analysis
+how_to_merge: 'peak_window' # 'peak_window','exact'
+
+# Downstream peak descriptives parameters
+#How far apart does +/- peaks have to be to be called divergent
+divergent_width: 150
+#How far do TSS have to be from each other to be called TSS
+multiple_peaks_width: 1000
+
+#Relate with GFF
+mRNA_peak_file: "/data/isshamie/TSS_CHO/mRNA.peak"
+distance_from_promoter: 1000
+
+
+# totalRNA paramers
+totalRNA_path : '/data/isshamie/ribosomalprofiling'

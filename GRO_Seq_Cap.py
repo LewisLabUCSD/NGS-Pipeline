@@ -82,7 +82,7 @@ def trim_parameters():
 @active_if(trim)
 @jobs_limit(trim_batch)
 @files(trim_parameters)
-@check_if_uptodate(check_file_exists)
+#@check_if_uptodate(check_file_exists)
 def trim_reads(input_file,output_file):
     print input_file,output_file
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
