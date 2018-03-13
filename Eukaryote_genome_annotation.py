@@ -7,8 +7,6 @@ import multiprocessing as mp
 import pandas as pd
 from Bio import Entrez
 import sys
-from Bio import Entrez
-Entrez.email = 'shl198@eng.ucsd.edu'
 
 # database files
 ref_fa = '/data/genome/hamster/multi_pacbio_assemble/picr.fa'
@@ -223,9 +221,9 @@ def gene_rna_pr_id(hamster_id,gmap_gff,out_fn):
     g_r_p_df['rna_ac'] = g_r_p_df.index
     g_r_p_df[['geneid','rna_ac','pr_ac']].to_csv(out_fn,sep='\t',index=False)
 
-# gmap_exon_path = path + '/gmap_exonerate'
-# if not os.path.exists(gmap_exon_path): os.mkdir(gmap_exon_path)
-# os.chdir(gmap_exon_path)
+gmap_exon_path = path + '/gmap_exonerate'
+if not os.path.exists(gmap_exon_path): os.mkdir(gmap_exon_path)
+os.chdir(gmap_exon_path)
 # gmap_gff = PASA_path + '/gmap.spliced_alignments.gff3'
 # g_r_p_id_fn = gmap_exon_path + '/01_gene_rna_pr.txt'
 # gene_rna_pr_id(hamster_id,gmap_gff,g_r_p_id_fn)
@@ -291,8 +289,8 @@ def get_consensus_map(rna_df,pr_df,gene,rna_ac,pr_ac):
     return rna_df,sub_pr_df,rna_chr,rna_splice[0],rna_splice[-1],rna_str
 
 
-# import time
-# process_start = time.time()
+import time
+process_start = time.time()
 
 def gmap_exonerate_merge_gff(gmap_gff,exonerate_gff,gmap_exon_path,all_id_fn):
     #-------- read gmap gff file
@@ -371,14 +369,7 @@ def gmap_exonerate_merge_gff(gmap_gff,exonerate_gff,gmap_exon_path,all_id_fn):
     res_df[8] = res_df.apply(lambda row: row[8]+';gene_name='+g_s_dic[row['geneid']] if row['geneid'] in g_s_dic else row[8]+';gene_name='+row['geneid'],axis=1)
     res_df[range(9)].to_csv('02_gmap_exonerate.gff',sep='\t',index=False,header=None)
     
-# gmap_gff = PASA_path+'/gmap.spliced_alignments.gff3'
-# gmap_exonerate_merge_gff(gmap_gff,pr_gff,gmap_exon_path,hamster_id)
-# 
-# print time.time() - process_start
+gmap_gff = PASA_path+'/gmap.spliced_alignments.gff3'
+gmap_exonerate_merge_gff(gmap_gff,pr_gff,gmap_exon_path,hamster_id)
 
-
-
-
-
-
-
+print time.time() - process_start

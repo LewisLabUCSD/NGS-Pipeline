@@ -1,3 +1,0 @@
--11/30/2017
-1. Added peak_descriptives.py . Does some basic functions …
-2. Added to hist_plot generating a heatmap as well as normalized histogram used -histNorm

@@ -19,8 +19,7 @@ file_path = p.RawDataPath
 thread = p.thread
 # all parameter
 ref_fa = p.ref_fa
-annotation = p.annotation
-QC = p.QC
+gff = p.gff
 # trimmomatic parameter
 trim = p.trim_reads
 trimmomatic = p.trimmomatic_path
@@ -28,22 +27,21 @@ trim_batch = p.trim_jobs_per_batch
 adapter = p.adapter
 
 star_batch = p.star_jobs_per_batch
-star_db = p.star_index_path
+star_db = p.star_index
 run_pass = p.star_pass
-other_params = p.star_params
+other_params = p.other_params
 
 contact = p.contact
 #===============================================================================
 #                    Pipeline part
 #===============================================================================
-Message('pipeline starting',contact)
+Message('get bam start',contact)
 os.chdir(file_path)
 #===============================================================================
 #                     Part I. Preprocess
 #===============================================================================
 #--------------------- 1. read all files ------------------------------------------------
 fastqFiles = list_fq_files(file_path)
-print fastqFiles
 if fastqFiles[0][0].startswith('trim_'):
     trim = False
 def trim_parameters():
@@ -78,11 +76,11 @@ if run_pass == 2:
 @jobs_limit(star_batch)
 @follows(star_index)
 @mkdir(fastqFiles,formatter(),'{path[0]}/sortBam')
+#@transform(fastqFiles,formatter('.*\.f.*?\.gz'),'sortBam/{basename[0]}.bam')
 @files(get_fq)
 def run_star(input_file,output_file):
-    print input_file
     n = num_thread2use(star_batch,len(fastqFiles),thread)
-    STAR(input_file,output_file,star_db,n,annotation,other_params)
+    STAR(input_file,output_file,star_db,n,gff,other_params)
 
 @follows(run_star)
 def last_function():
@@ -92,7 +90,7 @@ if __name__ == '__main__':
     try:
 #         pipeline_printout(sys.stdout, [last_function], verbose=3)
         pipeline_run([last_function],multiprocess=thread,gnu_make_maximal_rebuild_mode = True, 
-                    forcedtorun_tasks = [last_function], touch_files_only=False,verbose=4)
+                    touch_files_only=False)
     except:
         Message('get bam failed',contact)
         

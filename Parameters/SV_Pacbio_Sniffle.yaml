@@ -1,8 +1,7 @@
-contact: 'user@gmail.com' # can be email address or phone_number@txt.att.net
+contact: '8582636967@txt.att.net'
 RawDataPath: '/data/shangzhong/Pacbio/sniffle'
-thread: 16
+thread: 6
 # database parameters
-ref_fa: '/data/genome/hamster/picr/picr.fa'
+ref_fa: '/data/genome/hamster/new_pacbio_assemble/ch_illumina_pbj.fasta'
 bwa_db: '/data/genome/hamster/new_pacbio_assemble/bwaDb'
-aligner: 'ngmlr'
 

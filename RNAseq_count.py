@@ -126,7 +126,7 @@ def id_convert(input_file,output_file):
     dic = get_gene_name_id_dic(annotation,htseq_anno_source,sym2ID)
     gene_id_name_convert(input_file,output_file,dic)
 #--------------------- 7. return finish message -----------------------------------------------------
-@follows(id_convert,run_htseq)
+@follows(id_convert)
 def last_function():
     Message('RNA_count finished',contact)
 

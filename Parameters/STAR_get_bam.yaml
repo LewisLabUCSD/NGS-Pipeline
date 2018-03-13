@@ -1,8 +1,8 @@
-contact: 'user@gmail.com' # can be email address or phone_number@txt.att.net
+contact: '8582636967@txt.att.net' # can also be email address
 RawDataPath: '/data/shangzhong/DE/helene'
-thread: 8
+thread: 16
 # database parameters
-ref_fa: '/data/genome/hamster/picr/picr.fa'
+ref_fa: '/data/genome/hamster/multi_pacbio_assemble/picr.fa'
 gff: ''
 # tool specific parameters
 trim_reads: True
@@ -12,9 +12,9 @@ adapter: ''
 
 picard: '/home/shangzhong/Installation/picard-tools-1.141/picard.jar'
 
-star_jobs_per_batch: 1  # at most 2
+star_jobs_per_batch: 2
 star_index: '/data/genome/hamster/multi_pacbio_assemble/picr_STAR_Db'
-star_pass: 2
+star_pass: 1
 
 
 

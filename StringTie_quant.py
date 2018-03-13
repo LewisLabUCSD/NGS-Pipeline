@@ -20,6 +20,7 @@ QC = p.QC
 # all parameter
 ref_fa = p.ref_fa
 annotation = p.gff
+gtf = p.gtf
 # trimmomatic parameter
 trim = p.trim_reads
 trimmomatic = p.trimmomatic_path
@@ -93,7 +94,7 @@ def run_star(input_file,output_file):
 @check_if_uptodate(check_file_exists)
 @transform(run_star,formatter('.*\.bam'),'stringtie/{basename[0]}.gtf')
 def run_stringtie(input_file,output_file):
-    stringtie(input_file,output_file,thread,annotation)
+    stringtie(input_file,output_file,thread,gtf)
 #--------------------- 7. return finish message -----------------------------------------------------
 @follows(run_stringtie)
 def last_function():

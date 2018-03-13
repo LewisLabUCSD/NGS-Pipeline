@@ -1,8 +1,9 @@
-contact: 'user@gmail.com' # can be email address or phone_number@txt.att.net
+contact: '8582636967@txt.att.net' # can also be email address
 RawDataPath: '/data/shangzhong/Proteogenomics/test'
 thread: 9
 # database parameters
 ref_fa: '/data/genome/hamster/ncbi_refseq/hamster.fa'
+gff: '/data/genome/hamster/ncbi_refseq/hamster.gff' 
 # tool specific parameters
 trim_reads: True
 trimmomatic_path: '/home/shangzhong/Installation/Trimmomatic-0.32/Trimmomatic-0.33/trimmomatic-0.33.jar'
@@ -12,7 +13,7 @@ adapter: ''
 picard: '/home/shangzhong/Installation/picard-tools-1.141/picard.jar'
 gatk: '/home/shangzhong/Installation/GenomeAnalysisTK-3.5/GenomeAnalysisTK.jar'
 
-star_jobs_per_batch: 1
+star_jobs_per_batch: 2
 star_index: '/data/genome/hamster/ncbi_refseq/hamster_STAR_Db'
 
 sample_name: 'hamster'
