@@ -3,6 +3,7 @@ import sarge,sys,os
 import pandas as pd 
 import numpy as np
 import matplotlib as mpl 
+import tqdm
 mpl.use('Agg')
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -18,21 +19,23 @@ def add_fields_new_annotation(annotation):
     genome_anno['transcript_id'] = genome_anno.index.str.extract('gene_id=(.*);gene*',expand=False)
     return genome_anno
 
-    
-def peaks_within_x(peaks_file,distance=1000):
-    curr_peaks = pd.read_csv(peaks_file,sep='\t',comment='#')
+
+
+def peaks_within_x(peaks_file,distance=1000,dist_col= 'Distance to TSS',name_col = 'Nearest PromoterID'):
+    curr_peaks = pd.read_csv(peaks_file,sep='\t',comment='#',index_col=0)
     curr_peaks.dropna(axis=1,how='all',inplace=True)
     
     curr_peaks.dropna(axis=0,inplace=True)
-    curr_peaks = curr_peaks[np.abs(curr_peaks['Distance to TSS']) < distance]
-    curr_peaks['gene'] = curr_peaks['Nearest PromoterID'].str.extract('gene=(.*);transcript_id*',expand=True)
-    curr_peaks['gene_id'] = curr_peaks['Nearest PromoterID'].str.extract('gene_id=(.*);gene*',expand=True)
-    curr_peaks['transcript_id'] = curr_peaks['Nearest PromoterID'].str.extract('gene_id=(.*);gene*',expand=True)
+    curr_peaks = curr_peaks[np.abs(curr_peaks[dist_col]) < distance]
+    curr_peaks['gene'] = curr_peaks[name_col].str.extract('gene=(.*);transcript_id*',expand=True)
+    curr_peaks['gene_id'] = curr_peaks[name_col].str.extract('gene_id=(.*);gene*',expand=True)
+    curr_peaks['transcript_id'] = curr_peaks[name_col].str.extract('gene_id=(.*);gene*',expand=True)
     return curr_peaks
+
 
 def gene_centric_TSS(curr_peaks,annotation,divergent_txn_len = 200):
     gene_TSS = pd.DataFrame(index=set(curr_peaks['gene_id'].dropna()),
-             columns=['hasPromoter','hasExon1','hasIntron1','XhasExon1','XhasIntron1','Number Of Promoters',
+             columns=['peak_ids','hasPromoter','hasExon1','hasIntron1','XhasExon1','XhasIntron1','Number Of Promoters',
                      'Divergent Transcripts','Introns','Exons','Left Most TSS',
                      'TSS Peak Indices','Intergenic Peaks Adjacent of Gene','has Intergenic Peaks Adjacent of Gene'])
     
@@ -49,8 +52,11 @@ def gene_centric_TSS(curr_peaks,annotation,divergent_txn_len = 200):
     #    print(ind)
         tmp = genes_grouped.get_group(ind)
         tmp_promoters = tmp  #tmp[tmp['Reduced Annotation'] == 'promoter']
+        
         tmp_pos_promoters = tmp_promoters[tmp_promoters['Strand'] == val['Strand']]
         tmp_neg_promoters = tmp_promoters[tmp_promoters['Strand'] != val['Strand']]
+
+        gene_TSS.set_value(ind,'peak_ids',tmp_pos_promoters.index.values)
 
         if val['Strand'] == '-':
             strand_norm = -1
@@ -73,3 +79,12 @@ def gene_centric_TSS(curr_peaks,annotation,divergent_txn_len = 200):
         has_intron1 = np.sum(tmp['Annotation'].str.contains('intron 1')) > 0
         
     return gene_TSS
+
+
+def wrap_gene_centric(peak_file,annotation,f_save='',distance=1000,divergent_txn_len=200):
+    curr_peaks = peaks_within_x(peak_f,distance=distance)
+    gene_TSS = gene_centric_TSS(curr_peaks,annotation)
+    if not f_save == '':
+        gene_TSS.to_csv(sep='\t')
+
+    return curr_peaks,curr_genes 

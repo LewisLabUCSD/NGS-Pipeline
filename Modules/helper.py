@@ -8,65 +8,49 @@ def list_or_single(item):
     return item
 
 ########################################
-def createPeakFileFromGFF(annotation_file,output_file,anno_of_interest='mRNA'):
-    ''' 
-    Function to create a peak file based on GFF and specific annotation of interest
-	
-	Input
-	annotation_file: gff3 file
-	output_file: File to save to
-	anno_of_interest: a text term that has to be in the 'Annotation' column of the annotation file
-    
-    Creates a peak file of the Homer format and saves it to output_file
 
+
+########################################
+###########
+### These two functions allow for parallelization of pandas DataFrames
+def multi_run_wrapper(args):    
+    curr_func = args[0]
+    return curr_func(args[1],*args[2])
+
+
+def parallel_df(df,func,func_args = (),num_processes= 4):
     '''
-    #Read in annotation file
-    genome_ann = pd.read_csv(annotation_file,skiprows=1830,sep='\t',header=None)
-    col_names = list(genome_ann.columns.values)
-    col_names[0]= 'Chr'
-    col_names[1] = 'How'
-    col_names[2] = 'Annotation'
-    col_names[3]= 'Start'
-    col_names[4] = 'End'
-    col_names[6] = 'Strand'
-    col_names[8] = 'ID'
-
-    genome_ann.columns = col_names
-    genome_ann.sort_values(['Chr','Start','End'],inplace=True)
+    Function to parallelize a function that loops over dataframes
     
-    curr = genome_ann[genome_ann['Annotation'] == anno_of_interest]
-    curr = curr[['ID','Chr','Start','End','Strand']]
-    curr.to_csv(output_file,index=None,sep='\t')
-    return
-########################################
-
-########################################
-def peakFileToPeakFile(desired_peak_file,tag_peak_file,distance=1000,is_save=1):
     ''' 
-    Function to filter the peaks in a file to only the ones that are within a certain distance
-    of at least one peak in another file. 
-	
-	Input:
-	desired_peak_file: File which contains the peaks to be filtered
-	tag_peak_file: File that contains peaks to see if nearby the desired peaks
-	distance: Maximum distance to consider between peaks
-	is_save: To save the file or not. If on, will save peaks to file desired_peak_file+'filt'
-
-	Output:
-	updated_desired_peaks: The filtered peaks.
-    '''
-    desired_peaks = pd.read_csv(desired_peak_file,sep='\t')
-    tag_peaks = pd.read_csv(tag_peak_file,sep='\t')
-    inds_to_keep = []
-    for ind,val in desired_peaks.iterrows():
-        curr = tag_peaks[tag_peaks['Chr'] == val['Chr']]
-        diff =  val['Start'] - curr['Start']
-        if np.sum(np.abs(diff)<distance) > 0:
-            inds_to_keep.append(ind)
+    import pandas as pd
+    import multiprocessing
+    import itertools
     
-    updated_desired_peaks = desired_peaks.loc[inds_to_keep]
-    if is_save:
-        updated_desired_peaks.to_csv(desired_peak_file + 'filt',index=None,sep='\t')
-    return updated_desired_peaks
-########################################
+    # calculate the chunk size as an integer
+    chunk_size = int(df.shape[0]/num_processes)
 
+    # this solution was reworked from the above link.
+    # will work even if the length of the dataframe is not evenly divisible by num_processes
+    chunks = [df.loc[df.index[i:i + chunk_size]] for i in range(0, df.shape[0], chunk_size)]
+    
+    # create our pool with `num_processes` processes
+    pool = multiprocessing.Pool(processes=num_processes)
+
+    
+    # apply our function to each chunk in the list
+    result = pool.map(multi_run_wrapper,itertools.izip(itertools.repeat(func),chunks, itertools.repeat(func_args)))
+    
+    #print result[0]
+
+    new_df = pd.DataFrame()
+    for i in result:
+        # since i is just a dataframe
+        # we can reassign the original dataframe based on the index of each chunk
+        new_df = new_df.append(i)
+        #print df.loc[result[i].index,:]
+        #df.loc[result[i].index,:] = result[i]
+    pool.terminate()
+    return new_df
+
+########################################
