@@ -1,7 +1,7 @@
 # NewPipeline
 Pipelines to process NGS or Pacbio data
 ---------------------------------------
-
+Pipeline is developed using ruffus. http://www.ruffus.org.uk/.
 ## Method to run these pipelines.
 #### Paired end files should end with _1.fq.gz, _2.fq.gz or _1.fastq.gz,_2.fastq.fz. Single end files should end with _1.fq.gz
 #### STAR takes a lot of memory(30-50 GB) each run, so don't run more than 2 STAR in parallel at each batch.
