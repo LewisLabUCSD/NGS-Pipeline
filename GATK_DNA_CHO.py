@@ -13,7 +13,7 @@ from natsort import natsorted
 
 #============ parameters ======================
 parameter_file =  sys.argv[1]
-#parameter_file = '/data/shangzhong/DNArepair/fq/GATK_DNA_CHO.yaml'
+# parameter_file = '/data/shangzhong/Proteogenomics/fq/GATK_DNA_CHO.yaml'
 with open(parameter_file,'r') as f:
     doc = yaml.load(f)
 p = dic2obj(**doc)
@@ -197,9 +197,9 @@ def Baserecalibration_4(input_file,output_file):
 def remove_realiBam():
     if os.path.exists('f04_indelReali'): shutil.rmtree('f04_indelReali')
 #--------------------- 12. merge lanes for the same sample -----------------------------------------
-def get_rg_dic():
+def get_rg_dic(pattern):
     readic = {}
-    bamfiles = natsorted(glob.glob('f06_BaseRecal/*.recal.bam'))
+    bamfiles = natsorted(glob.glob(pattern))
     for rg,bam in zip(read_groups,bamfiles):
         start = rg.index('SM:')
         sample = rg[start+3:]
@@ -209,7 +209,7 @@ def get_rg_dic():
             readic[sample] = [bam]
     return readic
 def get_group_bam():
-    readic = get_rg_dic()
+    readic = get_rg_dic('f06_BaseRecal/*.recal.bam')
     for sp in readic:
         output_file = 'f07_mergeBam/' + sp + '.merge.bam'
         input_file = readic[sp]
@@ -245,7 +245,7 @@ def remove_mergeBam():
 @check_if_uptodate(check_file_exists)
 def Realign2(input_file,output_file):
     interval = re.sub('reali\.bam$','interval.list',output_file)
-    n = num_thread2use(len(get_rg_dic().keys()),len(fastqFiles),thread)
+    n = num_thread2use(len(get_rg_dic('f08_dedupBam2/*.bam').keys()),len(fastqFiles),thread)
     RealignerTargetCreator(input_file,interval,gatk,ref_fa,n,gold_indels=[''])
     IndelRealigner(input_file,output_file,gatk,ref_fa,interval,gold_indels=[''])
 @follows(Realign2)
@@ -257,7 +257,7 @@ def remove_dedupBam2():
 @transform(Realign2,formatter('.*\.reali\.bam'),'f10_Round2Call/{basename[0]}.raw.g.vcf')
 @check_if_uptodate(check_file_exists)
 def round2Vari_call(input_file,output_file):
-    n = num_thread2use(len(get_rg_dic().keys()),len(fastqFiles),thread)
+    n = num_thread2use(len(get_rg_dic('f09_indelReali2/*.bam').keys()),len(fastqFiles),thread)
     HaplotypeCaller_DNA_gVCF(input_file,output_file,gatk,ref_fa,n,otherParameters=[])
 #--------------------- 16. Merge raw2 vcf ---------------------------------------------
 @follows(round2Vari_call)
