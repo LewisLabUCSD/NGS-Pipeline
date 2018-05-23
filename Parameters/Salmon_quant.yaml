@@ -1,0 +1,16 @@
+contact: 'user@gmail.com' # can be email address or phone_number@txt.att.net
+RawDataPath: '/data/shangzhong/DE/test'
+thread: 3
+QC: False   # run fastqc or not
+# database parameter
+ref_fa: '/data/genome/cho/chok1_rna.fa' # fasta file includes all mRNA sequences
+gff: '/data/genome/cho/chok1.gff3'  # annotation file
+gff_type: 'ncbi'  # alternative is ensembl
+salmon_index: '/data/genome/cho/chok1_salmonDb'   # salmon index folder
+# tool specific parameters
+trim_reads: False
+trim_jobs_per_batch: 1 # how many trimmomatic you want to run at the same time
+adapter: ''   # fasta file that includes adapters you want to remove
+# salmon parameters
+lib_type: ''  # if leave blank, salmon can detect automatically
+salmon_batch: 1 # how many salmon job you want to run at the same time
