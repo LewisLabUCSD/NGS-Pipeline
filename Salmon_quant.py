@@ -84,8 +84,9 @@ if trim == False:
 @transform(trim_reads,formatter('.*\.f.*?\.gz'),'salmon/{basename[0]}')
 def run_salmon(input_files,output_folder):
     salmon(input_files,output_folder,salmonDb,thread,lib_type)
-    print 'merge transcript expression to gene level'
-    get_gene_expression(output_folder+'/quant.sf',gff_fn,gff_type)
+    if gff_type != '':
+        print 'merge transcript expression to gene level'
+        get_gene_expression(output_folder+'/quant.sf',gff_fn,gff_type)
 #--------------------- 7. return finish message -----------------------------------------------------
 @follows(run_salmon)
 def last_function():
