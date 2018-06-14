@@ -1,18 +1,18 @@
 contact: 'user@gmail.com' # can be email address or phone_number@txt.att.net
-RawDataPath: '/data/shangzhong/DE/mouse/fq'
+RawDataPath: '/data/shangzhong/DE/mouse/fq' # put fastq file into this folder.
 thread: 12
-QC: False
+QC: False  # run quality control
 # database parameters
-ref_fa: '/data/genome/cho/chok1.fa'
-gff: '/data/genome/cho/chok1.gff'
+ref_fa: '/data/genome/cho/chok1.fa' # reference genome fasta file
+gff: '/data/genome/cho/chok1.gff' # annotation file
 # tool specific parameters
-trim_reads: False
-trimmomatic_path: '/home/shangzhong/Installation/Trimmomatic-0.32/Trimmomatic-0.33/trimmomatic-0.33.jar'
-trim_jobs_per_batch: 6
-adapter: ''
+trim_reads: False  # trim reads or not
+trim_jobs_per_batch: 6  # number of trim jobs to run in parallel
+adapter: ''   # adapter file in fasta format. 
 
-star_jobs_per_batch: 1 # at most 2
-STAR_index_path:  '/data/genome/cho/cho_STAR_Db'  #'/opt/genome/cho/STAR_Db'  # alinger index
+star_jobs_per_batch: 1 # number of star jobs to run in parallel
+STAR_index_path:  '/data/genome/cho/cho_STAR_Db'  # aligner index folder, for the 1st time, point
+# to an empty folder so it will create the database automatically
 
 htseq_anno_source: 'ncbi'  # alternative values: 'ncbi', 'ensembl' or leave it empty.
 strand_specific: 'no'  # 'yes, no, reverse'
