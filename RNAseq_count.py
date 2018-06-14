@@ -1,7 +1,7 @@
 from ruffus import *
 from Modules.f01_file_process import *
 from Modules.Aligner import STAR,STAR_Db
-from Modules.Trimmomatic import Trimmomatic
+from Modules.Trimmomatic import conda_Trimmomatic
 from Modules.Samtools import sortBam
 from Modules.HTseq import htseq_count
 import yaml
@@ -21,7 +21,6 @@ ref_fa = p.ref_fa
 annotation = p.gff
 # trimmomatic parameter
 trim = p.trim_reads
-trimmomatic = p.trimmomatic_path
 trim_batch = p.trim_jobs_per_batch
 adapter = p.adapter
 # star parameter
@@ -62,7 +61,7 @@ def run_QC1(input_file,output_file):
 @files(trim_parameters)
 def trim_reads(input_file,output_file):
     n = num_thread2use(trim_batch,len(fastqFiles),thread)
-    Trimmomatic(input_file,output_file,trimmomatic,n,adapter)
+    conda_Trimmomatic(input_file,output_file,n,adapter)
     remove(input_file)
 #------------ run fastqc after trimming ------------
 @active_if(QC and trim)
