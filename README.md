@@ -19,4 +19,5 @@ Pipeline is developed using ruffus. http://www.ruffus.org.uk/.
 	* SV_Pacbio_Sniffle: call structure variation for Pacbio data using Sniffle
 	
 
-	
+Docker version of these pipelines are here https://hub.docker.com/r/shl198/
+---------------------------------------------------------------------------
