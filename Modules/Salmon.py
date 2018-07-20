@@ -36,9 +36,9 @@ def get_gene_expression(quant, gff_fn, anno_type='ncbi'):
             gid = re.search('(?<=GeneID:).+?(?=$|[;,])',anno).group(0)
             gnm = re.search('(?<=gene=).+?(?=$|[;,])',anno).group(0)
         elif anno_type == 'ensembl':
-            rna = re.search('(?<=transcript_id=).+?(?=$|[;,])',anno).group(0)
-            gid = re.search('(?<=gene_id=).+?(?=$|[;,])',anno).group(0)
-            gnm = re.search('(?<=gene_name=).+?(?=$|[;,])',anno).group(0)
+            rna = re.search('(?<=transcript_id=).+?(?=$|[;,.])',anno).group(0)
+            gid = re.search('(?<=gene_id=).+?(?=$|[;,.])',anno).group(0)
+            gnm = re.search('(?<=gene_name=).+?(?=$|[;,.])',anno).group(0)
         return pd.Series([rna, gid, gnm])
     
     # read gff file
@@ -47,6 +47,7 @@ def get_gene_expression(quant, gff_fn, anno_type='ncbi'):
         gff_df = gff_df[gff_df[2].values == 'mRNA']
     elif anno_type == 'ensembl':
         gff_df = gff_df[gff_df[2].values == 'transcript']
+        df['Name'] = df['Name'].map(lambda x: x.split('|')[0].split('.')[0])
     gff_df[['rnaid','gid','gnm']] = gff_df.apply(lambda x: extract_id(x,anno_type),axis=1)
     rna_gid_dic = gff_df.set_index('rnaid')['gid'].to_dict()
     rna_gnm_dic = gff_df.set_index('rnaid')['gnm'].to_dict()
@@ -54,6 +55,5 @@ def get_gene_expression(quant, gff_fn, anno_type='ncbi'):
     df['gename'] = df['Name'].map(lambda x: rna_gnm_dic[x] if x in rna_gid_dic else x)
     df = df.groupby(['geneid','gename']).sum()
     df.to_csv(out,sep='\t')
-
 
 
