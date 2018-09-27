@@ -3,10 +3,10 @@ import sarge,sys,os
 import pandas as pd 
 import numpy as np
 import matplotlib as mpl 
-mpl.use('Agg')
+##mpl.use('Agg')
 import seaborn as sns
 import matplotlib.pyplot as plt
-plt.style.use('ggplot')
+#plt.style.use('ggplot')
 
 
 #####
@@ -58,7 +58,7 @@ def find_peaks(tag_dir,out_file,peak_style,control_dir,otherParams=['']):
     * control_dir: The background tag directory
     * otherParams: Additional parameters such as how much fold increase over the background to be called a peak 
     '''
-    cmd = 'findPeaks {tag} -style {style} -o {out} -i {control} {other}'.format(
+    cmd = 'findPeaks {tag} -style {style} -o {out} -i {control} -norm 1000000 {other}'.format(
                 tag=tag_dir,style=peak_style,out=out_file,control=control_dir,
                 other=' '.join(otherParams))
     print(cmd);sys.stdout.flush()
@@ -77,7 +77,7 @@ def merge_peaks(input_files,output_file,dist,type_merge = ''):
     ## If only one file, do not want to run bc wont have proper layout, so just duplicate the file
     is_one = False
     if len(input_files) == 1:
-        if_one = True
+        is_one = True
         tmp = '%s_copy' % (input_files[0])
         cmd = 'cp {input} {copy}'.format(input=input_files[0],copy=tmp)
         input_files.append(tmp)
@@ -121,7 +121,7 @@ def merge_peaks(input_files,output_file,dist,type_merge = ''):
 ########################################
 def annotate_peaks(peak_file,output_file,ref_fa,annotation):
     '''
-    this function annotate peaks in terms of the annotation (e.g. promoter, exon..).
+    This function annotates peaks in terms of the annotation (e.g. promoter, exon..).
     Also marks closest TSS to each peak as well. 
     '''
     if annotation.endswith('gtf'):
@@ -238,9 +238,12 @@ def hist_plot(hist_out):
 def heat_plot(heat_file,sort_bins = [-1,1],num_peaks = 1000,is_norm=True,save_f=''):
     ''' Creates a heat plot with the input coming from annotatePeaks -ghist ''' 
     heat_df = pd.read_csv(heat_file,sep='\t',index_col=0)
-    centr = heat_df.shape[1]/2
-    heat_df = heat_df.iloc[np.argsort(np.sum(heat_df.iloc[:,centr-sort_bins[0]:centr+sort_bins[1]+1],axis=1))[::-1]]
+    centr = int(np.floor(heat_df.shape[1]/2))
+    #print(np.sum(heat_df.iloc[:,centr-sort_bins[0]:centr+sort_bins[1]+1],axis=1))
+    #print(heat_df.iloc[:,centr-sort_bins[0]:centr+sort_bins[1]+1])
     heat_df = heat_df.iloc[:min(num_peaks,heat_df.shape[1])]
+    heat_df = heat_df.iloc[np.argsort(np.sum(heat_df.iloc[:,centr-sort_bins[0]:centr+sort_bins[1]+1],axis=1))[::-1]]
+    
     if is_norm:
         heat_df = heat_df.divide(np.sum(heat_df,axis=1),axis='index')
     
@@ -329,15 +332,23 @@ def createPeakFileFromGFF(annotation_file,output_file,anno_of_interest='mRNA',is
     curr = curr[['ID','Chr','Start','End','Strand']]
      #Make the center of the peak the start site with flanking base pairs
     if is_start:    
-        curr['End'] = curr['Start'] + 1
-        curr['Start'] -= 1
+        # curr['End'] = curr['Start'] + 1
+        # curr['Start'] -= 1
+        curr2 = curr.copy()
+
+        ## If the strand is positive, then the end moves to the start, but if its negative, the start moves to the end.
+        curr['End'] = curr2.apply(lambda x: x['Start'] + 1 if x['Strand'] == '+' else x['End']+1,axis=1)
+        curr['Start'] = curr2.apply(lambda x: x['Start'] - 1 if x['Strand'] == '+'  else x['End'] - 1,axis=1)
+
+    curr['actual_start'] = curr.apply( lambda x: x['Start'] if x['Strand'] == '+' else x['End'],axis=1)
+
     curr.to_csv(output_file,index=None,sep='\t')
     return
 
 
 
 ########################################
-def peakFileToPeakFile(desired_peak_file,tag_peak_file,distance=1000,is_save=1):
+def peakFileToPeakFile(desired_peak_file,tag_peak_file,distance=1000,is_save=1,f_save=''):
     ''' 
     Function to filter the peaks in a file to only the ones that are within a certain distance
     of at least one peak in another file. 
@@ -362,19 +373,19 @@ def peakFileToPeakFile(desired_peak_file,tag_peak_file,distance=1000,is_save=1):
     
     updated_desired_peaks = desired_peaks.loc[inds_to_keep]
     if is_save:
-        updated_desired_peaks.to_csv(desired_peak_file + 'filt',index=None,sep='\t')
+        if f_save == '':
+            updated_desired_peaks.to_csv(desired_peak_file + 'filt',index=None,sep='\t')
+        else: 
+            updated_desired_peaks.to_csv(f_save + 'filt',index=None,sep='\t')
     return updated_desired_peaks
 
 
 ########################################
 def convert_peak_to_bed_file(peak_file,out_name):
     ''' Convert homer peak tsv file to a bed file ''' 
-    tss = pd.read_csv(peak_file,sep='\t')
-    #Write bed files
-    tss.sort_values(['Chr','Strand','Start'],inplace = True)
-    tss_bed_frame = tss[['Chr', 'Start', 'End', 'ID','Total subpeaks','Strand']]  
-    curr_bed_file =  out_name + '.bed'
-    tss_bed_frame.to_csv(curr_bed_file, sep='\t', index=False, header=False)
+    cmd = 'pos2bed.pl %s > %s' % (peak_file,out_name)
+    print(cmd)
+    sarge.run(cmd)
 
 
 ########################################
@@ -427,7 +438,7 @@ def homer_trim_cmd(input_file,seq='AGATCGGAAGAGCACACGTCT'):
     return
 
 #######################################
-def homer_dinucleotide(input_file,output_file, ref_fa):
+def homer_nucleotide(input_file,output_file, ref_fa,size=1000,only_plot=False):
     '''
     Input
     * input_file: peak file
@@ -438,18 +449,23 @@ def homer_dinucleotide(input_file,output_file, ref_fa):
     '''
 
     #cmd = 'annotatePeaks.pl f06_annoPeaks/merge_bg_2.anno_promoter /data/genome/hamster/picr/picr.fa -size 1000 -hist 1 -di > nuc_freq.txt'
-    cmd = 'annotatePeaks.pl %s %s -size 1000 -hist 1 -di > %s' % (input_file,ref_fa,output_file)
-    print(cmd)
-    sarge.run(cmd)
-    tmp = pd.read_csv(output_file, sep='\t',index_col=0)
+    if not only_plot:
+    	cmd = 'annotatePeaks.pl %s %s -size %s -hist 1 -di > %s' % (input_file,ref_fa,size,output_file)
+    	print(cmd)
+    	sarge.run(cmd)
+    	tmp = pd.read_csv(output_file, sep='\t',index_col=0)
+    else: #Alrady have the frequency plots, just want to plot
+    	tmp = pd.read_csv(input_file,sep='\t',index_col=0)
     f = plt.figure(dpi=300)
     ax = f.add_subplot(111)
-    ax.plot(tmp.index.values,tmp['A frequency'],alpha=0.1)
-    ax.plot(tmp.index.values,tmp['C frequency'],alpha=0.1)
+    ax.plot(tmp.index.values,tmp['A frequency'])
+    ax.plot(tmp.index.values,tmp['C frequency'])
     ax.plot(tmp.index.values,tmp['T frequency'])
-    ax.plot(tmp.index.values,tmp['G frequency'],alpha=0.1)
+    ax.plot(tmp.index.values,tmp['G frequency'])
     ax.vlines(0,ax.get_ylim()[0],ax.get_ylim()[1])
     ax.legend()
+    ax.set_xlabel('bp from TSS')
+    ax.set_ylabel('Frequency')
     plt.savefig(output_file + '.png')
 
 
@@ -457,6 +473,7 @@ def homer_dinucleotide(input_file,output_file, ref_fa):
 def extract_peak_sequences(bed_file,peak_list,genome,f_save,upstream=1000,downstream=100):
     ''' 
     Extracts genomic sequences given a list of peaks
+    Assumes ID is the 4th column
     '''
     #Save the list to bed_file first. Note bed file is index base 0!
     all_peaks = pd.read_csv(bed_file,sep='\t',header=None)
