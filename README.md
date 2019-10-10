@@ -19,4 +19,9 @@ Pipelines to process NGS or Pacbio data
 	* SV_Pacbio_Sniffle: call structure variation for Pacbio data using Sniffle
 	
 
+## Pipeline specific notes
+
+### RNAseq_STARpipeline.sh
+
+* Be aware, this is a bash pipeline and does not manage flow and reruns like ruffus.
 	
